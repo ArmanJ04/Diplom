@@ -15,11 +15,11 @@ function Login() {
 
     if (result === "success") {
       window.alert("Login successful!");
-      setEmail(""); // ✅ Clear fields only after successful login
+      setEmail(""); 
       setPassword("");
       navigate("/dashboard");
     } else {
-      window.alert(result); // ✅ Show error alert without clearing inputs
+      window.alert(result); 
     }
   };
 

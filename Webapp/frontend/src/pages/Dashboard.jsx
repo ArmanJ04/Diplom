@@ -13,7 +13,7 @@ function Dashboard() {
 
   return (
     <div className="container">
-      <h1>Welcome, {user?.email}</h1>
+      <h1>Welcome, {user?.name}</h1>
       <p>Manage your health with AI-driven predictions.</p>
       <Link to="/prediction">
         <button>Make Prediction</button>

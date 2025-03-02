@@ -71,6 +71,10 @@ button:hover {
   transform: translateY(-2px);
 }
 
+button:disabled {
+  background-color: #ccc;
+}
+
 /* Ссылки */
 a {
   color: #007bff;
@@ -110,6 +114,7 @@ form {
   font-weight: 500;
   box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.1);
 }
+
 /* Navbar Styles */
 .navbar {
   background: linear-gradient(135deg, #007bff, #0056b3);
@@ -135,6 +140,7 @@ form {
   background: rgba(255, 255, 255, 0.2);
   transform: scale(1.1);
 }
+
 /* Стили для профиля */
 .history-list {
   list-style: none;
@@ -151,4 +157,75 @@ form {
 
 .history-list li strong {
   color: #007bff;
+}
+
+/* Prediction Page Styles */
+.prediction-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.prediction-container h2 {
+  text-align: center;
+  color: #333;
+}
+
+.prediction-container label {
+  display: block;
+  margin-top: 10px;
+  font-size: 1.1em;
+  color: #555;
+}
+
+.prediction-container input,
+.prediction-container select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1em;
+}
+
+.prediction-container input[type="checkbox"] {
+  width: auto;
+  margin-right: 10px;
+}
+
+.prediction-container button {
+  width: 100%;
+  padding: 15px;
+  margin-top: 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 1.2em;
+  cursor: pointer;
+}
+
+.prediction-container button:disabled {
+  background-color: #ccc;
+}
+
+.prediction-container .prediction-result {
+  margin-top: 20px;
+  padding: 20px;
+  background-color: #e9ecef;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.prediction-container .prediction-result h3 {
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.prediction-container .prediction-result p {
+  font-size: 1.1em;
+  color: #555;
 }
