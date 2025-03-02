@@ -4,14 +4,14 @@ import { useAuth } from "../context/AuthContext";
 const Prediction = () => {
   const { user } = useAuth();
   const [inputData, setInputData] = useState({
-    age: "",
+    birthdate: "",
+    gender: "male",
     height: "",
     weight: "",
-    gender: "male",
     systolicBP: "",
     diastolicBP: "",
-    cholesterol: "normal",
-    glucose: "normal",
+    cholesterol: "1",
+    glucose: "1",
     smoking: false,
     alcoholIntake: false,
     physicalActivity: false,
@@ -23,7 +23,7 @@ const Prediction = () => {
     if (user) {
       setInputData((prevState) => ({
         ...prevState,
-        age: user.age || "",
+        birthdate: user.birthdate || "",
         height: user.height || "",
         weight: user.weight || "",
         gender: user.gender || "male",
@@ -40,21 +40,31 @@ const Prediction = () => {
     }));
   };
 
+  const calculateAgeInDays = (birthdate) => {
+    const birthDate = new Date(birthdate);
+    const currentDate = new Date();
+    const ageInMilliseconds = currentDate - birthDate;
+    const ageInDays = Math.floor(ageInMilliseconds / (1000 * 60 * 60 * 24));
+    return ageInDays;
+  };
+
   const handleSubmit = async () => {
     setLoading(true);
     setResult(null);
 
     try {
+      const ageInDays = calculateAgeInDays(inputData.birthdate);
+
       const formattedData = {
         features: [
-          parseInt(inputData.age),
+          ageInDays,
+          inputData.gender === "male" ? 1 : 0,
           parseFloat(inputData.height),
           parseFloat(inputData.weight),
-          inputData.gender === "male" ? 1 : 0,
           parseInt(inputData.systolicBP),
           parseInt(inputData.diastolicBP),
-          inputData.cholesterol === "normal" ? 1 : inputData.cholesterol === "above_normal" ? 2 : 3,
-          inputData.glucose === "normal" ? 1 : inputData.glucose === "above_normal" ? 2 : 3,
+          parseInt(inputData.cholesterol),
+          parseInt(inputData.glucose),
           inputData.smoking ? 1 : 0,
           inputData.alcoholIntake ? 1 : 0,
           inputData.physicalActivity ? 1 : 0,
@@ -108,14 +118,14 @@ const Prediction = () => {
     <div className="prediction-container">
       <h2>Cardiovascular Disease Prediction</h2>
 
-      <label>Age:</label>
-      <input type="number" name="age" value={inputData.age} onChange={handleChange} />
+      <label>Birthdate:</label>
+      <input type="date" name="birthdate" value={inputData.birthdate} onChange={handleChange} placeholder="Enter your birthdate" />
 
       <label>Height (cm):</label>
-      <input type="number" name="height" value={inputData.height} onChange={handleChange} />
+      <input type="number" name="height" value={inputData.height} onChange={handleChange} placeholder="Enter your height in cm" />
 
       <label>Weight (kg):</label>
-      <input type="number" name="weight" value={inputData.weight} onChange={handleChange} />
+      <input type="number" name="weight" value={inputData.weight} onChange={handleChange} placeholder="Enter your weight in kg" />
 
       <label>Gender:</label>
       <select name="gender" value={inputData.gender} onChange={handleChange}>
@@ -124,23 +134,23 @@ const Prediction = () => {
       </select>
 
       <label>Systolic Blood Pressure:</label>
-      <input type="number" name="systolicBP" value={inputData.systolicBP} onChange={handleChange} />
+      <input type="number" name="systolicBP" value={inputData.systolicBP} onChange={handleChange} placeholder="Enter systolic BP" />
 
       <label>Diastolic Blood Pressure:</label>
-      <input type="number" name="diastolicBP" value={inputData.diastolicBP} onChange={handleChange} />
+      <input type="number" name="diastolicBP" value={inputData.diastolicBP} onChange={handleChange} placeholder="Enter diastolic BP" />
 
       <label>Cholesterol Level:</label>
       <select name="cholesterol" value={inputData.cholesterol} onChange={handleChange}>
-        <option value="normal">Normal</option>
-        <option value="above_normal">Above Normal</option>
-        <option value="well_above_normal">Well Above Normal</option>
+        <option value="1">Normal (Total &lt; 200 mg/dL)</option>
+        <option value="2">Above Normal (Total 200-239 mg/dL)</option>
+        <option value="3">Well Above Normal (Total ≥ 240 mg/dL)</option>
       </select>
 
       <label>Glucose Level:</label>
       <select name="glucose" value={inputData.glucose} onChange={handleChange}>
-        <option value="normal">Normal</option>
-        <option value="above_normal">Above Normal</option>
-        <option value="well_above_normal">Well Above Normal</option>
+        <option value="1">Normal (70-100 mg/dL)</option>
+        <option value="2">Above Normal (100-125 mg/dL)</option>
+        <option value="3">Well Above Normal (≥ 126 mg/dL)</option>
       </select>
 
       <label>Smoking:</label>
