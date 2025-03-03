@@ -23,7 +23,7 @@ const Prediction = () => {
     if (user) {
       setInputData((prevState) => ({
         ...prevState,
-        birthdate: user.birthdate || "",
+        birthdate: formatDateForInput(user.birthdate) || "",
         height: user.height || "",
         weight: user.weight || "",
         gender: user.gender || "male",
@@ -112,6 +112,14 @@ const Prediction = () => {
     if (probability >= 0.7) return "High";
     if (probability >= 0.4) return "Moderate";
     return "Low";
+  };
+
+  const formatDateForInput = (dateString) => {
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
 
   return (

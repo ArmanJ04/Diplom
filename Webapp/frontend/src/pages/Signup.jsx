@@ -7,7 +7,7 @@ function Signup() {
     email: "",
     password: "",
     name: "",
-    age: "",
+    birthdate: "",
     gender: "",
     height: "",
     weight: "",
@@ -35,13 +35,27 @@ function Signup() {
       return;
     }
 
+    // Format birthdate to dd-MMM-yyyy before sending to backend
+    const formattedData = {
+      ...formData,
+      birthdate: formatDateForSave(formData.birthdate),
+    };
+
     try {
-      await signup(formData);
+      await signup(formattedData);
       window.alert("Signup successful! Redirecting to your profile...");
       navigate("/profile");
     } catch (error) {
       window.alert("Signup failed. Please try again.");
     }
+  };
+
+  const formatDateForSave = (dateString) => {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = date.toLocaleString('default', { month: 'short' });
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
   };
 
   return (
@@ -51,7 +65,7 @@ function Signup() {
         <input type="text" name="name" placeholder="Full Name" value={formData.name} onChange={handleChange} required />
         <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleChange} required />
         <input type="password" name="password" placeholder="Password (min. 8 chars)" value={formData.password} onChange={handleChange} required />
-        <input type="number" name="age" placeholder="Age" value={formData.age} onChange={handleChange} required />
+        <input type="date" name="birthdate" placeholder="Birthdate" value={formData.birthdate} onChange={handleChange} required />
         <select name="gender" value={formData.gender} onChange={handleChange} required>
           <option value="">Select Gender</option>
           <option value="male">Male</option>

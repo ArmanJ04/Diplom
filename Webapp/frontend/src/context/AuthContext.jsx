@@ -73,6 +73,8 @@ export const AuthProvider = ({ children }) => {
   };
   const signup = async (userData) => {
     try {
+      console.log("Signup Data:", userData); // Add this line to log the signup data
+
       const res = await axios.post("http://localhost:5000/api/auth/register", userData, {
         withCredentials: true,
       });

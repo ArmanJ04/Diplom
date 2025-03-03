@@ -7,13 +7,13 @@ function Profile() {
   const navigate = useNavigate();
   const [editable, setEditable] = useState(false);
   const [history, setHistory] = useState([]);
-  
-  // ✅ Read user from localStorage if available
+
+  // Read user from localStorage if available
   const [formData, setFormData] = useState(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
     return storedUser || {
       name: "",
-      age: "",
+      birthdate: "",
       height: "",
       weight: "",
       gender: "",
@@ -54,9 +54,34 @@ function Profile() {
   };
 
   const handleSave = async () => {
-    await updateUser(formData); // ✅ Correct function call
+    const formattedData = {
+      ...formData,
+      birthdate: formatDateForSave(formData.birthdate),
+    };
+    await updateUser(formattedData);
     setEditable(false);
-    localStorage.setItem("user", JSON.stringify(formData)); // ✅ Save updated data in localStorage
+    localStorage.setItem("user", JSON.stringify(formattedData));
+  };
+
+  const formatDateForInput = (dateString) => {
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const formatDateForDisplay = (dateString) => {
+    const options = { day: '2-digit', month: 'short', year: 'numeric' };
+    return new Date(dateString).toLocaleDateString('en-GB', options);
+  };
+
+  const formatDateForSave = (dateString) => {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = date.toLocaleString('default', { month: 'short' });
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
   };
 
   if (!user) return <p>Loading...</p>;
@@ -68,13 +93,13 @@ function Profile() {
         {editable ? (
           <>
             <input type="text" name="name" value={formData.name} onChange={handleChange} placeholder="Name" />
-            <input type="number" name="age" value={formData.age} onChange={handleChange} placeholder="Age" />
+            <input type="date" name="birthdate" value={formatDateForInput(formData.birthdate)} onChange={handleChange} placeholder="Birthdate" />
             <input type="number" name="height" value={formData.height} onChange={handleChange} placeholder="Height (cm)" />
             <input type="number" name="weight" value={formData.weight} onChange={handleChange} placeholder="Weight (kg)" />
             <select name="gender" value={formData.gender} onChange={handleChange}>
               <option value="">Select Gender</option>
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
             </select>
             <label>
               <input type="checkbox" name="smoking" checked={formData.smoking} onChange={handleChange} /> Smoking
@@ -88,7 +113,7 @@ function Profile() {
         ) : (
           <>
             <p><strong>Name:</strong> {formData.name}</p>
-            <p><strong>Age:</strong> {formData.age}</p>
+            <p><strong>Birthdate:</strong> {formatDateForDisplay(formData.birthdate)}</p>
             <p><strong>Height:</strong> {formData.height} cm</p>
             <p><strong>Weight:</strong> {formData.weight} kg</p>
             <p><strong>Gender:</strong> {formData.gender}</p>
