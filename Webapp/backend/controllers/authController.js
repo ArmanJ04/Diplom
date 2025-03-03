@@ -1,65 +1,57 @@
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcrypt");
 const User = require("../models/User");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 const SECRET_KEY = process.env.JWT_SECRET || "your_secret_key";
 
 exports.register = async (req, res) => {
+  const { email, password, name, birthdate, gender, height, weight, smoking, alcohol, physicalActivity } = req.body;
+
+  console.log("Request Body:", req.body); // Add this line to log the request body
+
+  // Check for missing required fields
+  if (!email || !password || !name || !birthdate || !gender || !height || !weight || physicalActivity === undefined) {
+    console.log("Missing fields:", { email, password, name, birthdate, gender, height, weight, physicalActivity }); // Add this line to log missing fields
+    return res.status(400).json({ message: 'Missing required fields' });
+  }
+
   try {
-    console.log("Received registration data:", req.body); // ✅ Debugging log
-
-    const { name, email, password, age, gender, height, weight, smoking, alcohol, physicalActivity } = req.body;
-
-    if (!name || !email || !password || !age || !gender) {
-      return res.status(400).json({ message: "Missing required fields" });
-    }
-
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 12);
 
-    // ✅ Ensure all fields are included when creating a new user
+    // Convert birthdate from dd-MMM-yyyy to Date object
+    const [day, month, year] = birthdate.split('-');
+    const monthIndex = new Date(`${month} 1, 2000`).getMonth(); // Get month index from month name
+    const formattedBirthdate = new Date(year, monthIndex, day);
+
     const newUser = new User({
-      name,
       email,
       password: hashedPassword,
-      age,
+      name,
+      birthdate: formattedBirthdate, // Ensure birthdate is stored as a Date object
       gender,
-      height: height || null,
-      weight: weight || null,
-      smoking: smoking !== undefined ? smoking : false,
-      alcohol: alcohol !== undefined ? alcohol : false,
-      physicalActivity: physicalActivity || 0
+      height,
+      weight,
+      smoking,
+      alcohol,
+      physicalActivity,
     });
 
     await newUser.save();
 
-    console.log("Saved user data:", newUser); // ✅ Debugging log
+    const token = jwt.sign({ id: newUser._id }, SECRET_KEY, { expiresIn: "1h" });
 
-    // ✅ Return full user profile (excluding password)
-    res.status(201).json({
-      user: {
-        id: newUser._id,
-        name: newUser.name,
-        email: newUser.email,
-        age: newUser.age,
-        gender: newUser.gender,
-        height: newUser.height,
-        weight: newUser.weight,
-        smoking: newUser.smoking,
-        alcohol: newUser.alcohol,
-        physicalActivity: newUser.physicalActivity
-      }
-    });
-
+    res.status(201).json({ user: newUser, token });
   } catch (error) {
     console.error("Registration error:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
+
 exports.login = async (req, res) => {
   const { email, password } = req.body;
   

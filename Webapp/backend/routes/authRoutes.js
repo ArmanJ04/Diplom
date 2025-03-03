@@ -1,7 +1,4 @@
 const express = require("express");
-const path = require("path");
-
-// Import functions correctly
 const { register, login, checkAuth } = require("../controllers/authController");
 const authMiddleware = require("../middleware/authMiddleware");
 
