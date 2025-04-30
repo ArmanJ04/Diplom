@@ -3,88 +3,114 @@ import { AuthContext } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 
 function Signup() {
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    name: "",
-    birthdate: "",
-    gender: "",
-    height: "",
-    weight: "",
-    smoking: false,
-    alcohol: false,
-    physicalActivity: "",
-  });
-
   const { signup } = useContext(AuthContext);
   const navigate = useNavigate();
 
+  const [formData, setFormData] = useState({
+    role: "",
+    firstName: "",
+    lastName: "",
+    uin: "",
+    email: "",
+    password: "",
+  });
+
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!/^\d{12}$/.test(formData.uin)) {
+      window.alert("UIN must be exactly 12 digits.");
+      return;
+    }
+
     if (formData.password.length < 8) {
       window.alert("Password must be at least 8 characters long.");
       return;
     }
 
-    // Format birthdate to dd-MMM-yyyy before sending to backend
-    const formattedData = {
-      ...formData,
-      birthdate: formatDateForSave(formData.birthdate),
-    };
-
     try {
-      await signup(formattedData);
-      window.alert("Signup successful! Redirecting to your profile...");
-      navigate("/profile");
+      await signup(formData);
+      window.alert("Signup successful!");
+
+      if (formData.role === "patient") {
+        navigate("/profile");
+      } else {
+        navigate("/dashboard");
+      }
     } catch (error) {
       window.alert("Signup failed. Please try again.");
     }
-  };
-
-  const formatDateForSave = (dateString) => {
-    const date = new Date(dateString);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = date.toLocaleString('default', { month: 'short' });
-    const year = date.getFullYear();
-    return `${day}-${month}-${year}`;
   };
 
   return (
     <div className="container">
       <h2>Sign Up</h2>
       <form onSubmit={handleSubmit}>
-        <input type="text" name="name" placeholder="Full Name" value={formData.name} onChange={handleChange} required />
-        <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleChange} required />
-        <input type="password" name="password" placeholder="Password (min. 8 chars)" value={formData.password} onChange={handleChange} required />
-        <input type="date" name="birthdate" placeholder="Birthdate" value={formData.birthdate} onChange={handleChange} required />
-        <select name="gender" value={formData.gender} onChange={handleChange} required>
-          <option value="">Select Gender</option>
-          <option value="male">Male</option>
-          <option value="female">Female</option>
+        <select name="role" value={formData.role} onChange={handleChange} required>
+          <option value="">Select Role</option>
+          <option value="patient">Patient</option>
+          <option value="doctor">Doctor</option>
         </select>
-        <input type="number" name="height" placeholder="Height (cm)" value={formData.height} onChange={handleChange} required />
-        <input type="number" name="weight" placeholder="Weight (kg)" value={formData.weight} onChange={handleChange} required />
-        <label>
-          <input type="checkbox" name="smoking" checked={formData.smoking} onChange={handleChange} />
-          Smoking
-        </label>
-        <label>
-          <input type="checkbox" name="alcohol" checked={formData.alcohol} onChange={handleChange} />
-          Alcohol Intake
-        </label>
-        <input type="text" name="physicalActivity" placeholder="Physical Activity (hours per week)" value={formData.physicalActivity} onChange={handleChange} required />
+
+        <input
+          type="text"
+          name="firstName"
+          placeholder="First Name"
+          value={formData.firstName}
+          onChange={handleChange}
+          required
+        />
+
+        <input
+          type="text"
+          name="lastName"
+          placeholder="Last Name"
+          value={formData.lastName}
+          onChange={handleChange}
+          required
+        />
+
+        <input
+          type="text"
+          name="uin"
+          placeholder="UIN (12 digits)"
+          value={formData.uin}
+          onChange={handleChange}
+          required
+        />
+
+        <input
+          type="email"
+          name="email"
+          placeholder="Email"
+          value={formData.email}
+          onChange={handleChange}
+          required
+        />
+
+        <input
+          type="password"
+          name="password"
+          placeholder="Password"
+          value={formData.password}
+          onChange={handleChange}
+          required
+        />
+
         <button type="submit">Sign Up</button>
       </form>
-      <p>Already have an account? <Link to="/login">Login here</Link></p>
+
+      <p>
+        Already have an account? <Link to="/login">Login here</Link>
+      </p>
     </div>
   );
 }

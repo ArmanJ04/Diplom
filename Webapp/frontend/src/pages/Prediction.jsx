@@ -92,7 +92,7 @@ const Prediction = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: user.email, // ✅ Using email instead of userId
+          uin: user.uin, // Use uin instead of email
           prediction: data.prediction,
         }),
       });
