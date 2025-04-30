@@ -1,9 +1,9 @@
 const mongoose = require("mongoose");
 
 const PredictionSchema = new mongoose.Schema({
-  email: { type: String, required: true },
+  uin: { type: String, required: true }, // Changed from 'email' to 'uin'
   prediction: { type: Number, required: true },
-  timestamp: { type: Date, default: Date.now }, // ✅ Ensuring it's a valid Date
+  timestamp: { type: Date, default: Date.now },
 });
 
 module.exports = mongoose.model("Prediction", PredictionSchema);

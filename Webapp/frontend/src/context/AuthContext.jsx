@@ -5,51 +5,47 @@ export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true); // ✅ Added loading state
+  const [loading, setLoading] = useState(true);
 
-  // ✅ Move checkAuth OUTSIDE useEffect so it can be used anywhere
   const checkAuth = async () => {
     try {
       const res = await axios.get("http://localhost:5000/api/auth/check-auth", {
         withCredentials: true,
       });
       setUser(res.data.user);
+      localStorage.setItem("user", JSON.stringify(res.data.user));
     } catch (error) {
       setUser(null);
+      localStorage.removeItem("user");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    checkAuth(); // ✅ Runs when the component mounts
+    checkAuth();
   }, []);
 
-  const login = async (email, password) => {
+  const login = async (uin, password) => {
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/login", { email, password }, {
-        withCredentials: true,
-      });
-  
+      const res = await axios.post(
+        "http://localhost:5000/api/auth/login",
+        { uin, password },
+        { withCredentials: true }
+      );
+
       if (res.status === 200 && res.data.user) {
         const userData = res.data.user;
         setUser(userData);
         localStorage.setItem("user", JSON.stringify(userData));
-  
-        // ✅ Ensure user data refresh
-        await checkAuth();
-  
-        // ✅ Show success alert only when login actually succeeds
+
         return "success";
       }
     } catch (error) {
       console.error("Login failed:", error.response?.data?.message || error.message);
-  
-      // ✅ Return error message instead of showing an alert here
       return error.response?.data?.message || "Invalid credentials. Please try again.";
     }
   };
-  
 
   const logout = async () => {
     await axios.post("http://localhost:5000/api/auth/logout", {}, {
@@ -71,27 +67,26 @@ export const AuthProvider = ({ children }) => {
       console.error("Profile update failed:", error.response?.data?.message || error.message);
     }
   };
+
   const signup = async (userData) => {
     try {
-      console.log("Signup Data:", userData); // Add this line to log the signup data
-
       const res = await axios.post("http://localhost:5000/api/auth/register", userData, {
         withCredentials: true,
       });
-  
+
       const newUser = res.data.user;
-      setUser(newUser); // ✅ Immediately update the state
-      localStorage.setItem("user", JSON.stringify(newUser)); // ✅ Store user in localStorage
-  
-      // ✅ Automatically log in the user after signup
-      await login(userData.email, userData.password);
+      setUser(newUser);
+      localStorage.setItem("user", JSON.stringify(newUser));
+
+      await login(userData.uin, userData.password); // Fix here: use `uin`
+
+      return newUser;
     } catch (error) {
       console.error("Sign-up failed:", error.response?.data?.message || error.message);
+      return null;
     }
   };
-  
-  
-  
+
   return (
     <AuthContext.Provider value={{ user, signup, login, logout, updateUser, checkAuth, loading }}>
       {children}
