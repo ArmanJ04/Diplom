@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 const SECRET_KEY = process.env.JWT_SECRET || "your_secret_key";
+
 exports.register = async (req, res) => {
   try {
     const { role, firstName, lastName, uin, email, password } = req.body;
@@ -29,42 +30,45 @@ exports.register = async (req, res) => {
       uin,
       email,
       password: hashedPassword,
+      doctorApproved: role === "doctor" ? false : true,  // If doctor, set approval to false
     });
 
     await newUser.save();
 
     const token = jwt.sign({ id: newUser._id }, SECRET_KEY, { expiresIn: "1h" });
 
-    res.status(201).json({ user: newUser, token });
+    const { password: _, ...userData } = newUser._doc;
+
+    res.status(201).json({ user: userData, token });
   } catch (error) {
     console.error("Registration error:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
+
 exports.login = async (req, res) => {
   console.log("LOGIN ATTEMPT:", req.body);
-  const { uin, password } = req.body;  // Change 'email' to 'uin'
-  
+  const { uin, password } = req.body;
+
   try {
-    const user = await User.findOne({ uin });  // Ensure querying by 'uin'
+    const user = await User.findOne({ uin });
     if (!user) return res.status(400).json({ message: "User not found" });
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
 
-    // Generate JWT token
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || "your_secret_key", { expiresIn: "7d" });
+    const token = jwt.sign({ id: user._id }, SECRET_KEY, { expiresIn: "7d" });
 
-    // Store token in HTTP-only cookie
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "Strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    res.json({ user: fullUser, token });
- 
+    const { password: pw, ...userData } = user._doc;
+
+    res.json({ user: userData, token });
   } catch (error) {
     console.error("Login error:", error);
     res.status(500).json({ message: "Server error" });
@@ -89,7 +93,8 @@ exports.checkAuth = async (req, res) => {
     }
   });
 };
+
 exports.logout = (req, res) => {
-  res.clearCookie("token"); // Clear the cookie
+  res.clearCookie("token");
   res.status(200).json({ message: "Logged out successfully" });
 };

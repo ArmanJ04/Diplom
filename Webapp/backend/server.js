@@ -6,6 +6,7 @@ const cookieParser = require("cookie-parser");
 const authRoutes = require("./routes/authRoutes");
 const aiRoutes = require("./routes/aiRoutes");
 const predictionRoutes = require("./routes/predictionRoutes");
+const doctorRoutes = require("./routes/doctorRoutes");
 
 const app = express();
 
@@ -41,6 +42,8 @@ app.post("/api/auth/logout", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/ai", aiRoutes);
 app.use("/api/prediction", predictionRoutes);
+app.use("/api/doctor", doctorRoutes);
+
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

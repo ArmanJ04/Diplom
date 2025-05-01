@@ -16,5 +16,7 @@ const userSchema = new mongoose.Schema({
   smoking: Boolean,
   alcohol: Boolean,
   physicalActivity: String,
+  doctorApproved: { type: Boolean, default: false },  // Add doctor approval flag
+
 });
 module.exports = mongoose.model("User", userSchema);
