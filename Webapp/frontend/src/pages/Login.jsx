@@ -5,7 +5,7 @@ import { useNavigate, Link } from "react-router-dom";
 function Login() {
   const [uin, setUin] = useState("");
   const [password, setPassword] = useState("");
-  const { login, setUser } = useContext(AuthContext); // Добавим setUser для обновления контекста
+  const { login, setUser } = useContext(AuthContext); // Add setUser to update context
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -14,15 +14,19 @@ function Login() {
     try {
       const result = await login(uin, password);
 
+      console.log("Login result:", result);  // Debugging log to check the result
+
       if (result === "success") {
-        const storedUser = JSON.parse(localStorage.getItem("user")); // Загружаем пользователя из localStorage
+        const storedUser = JSON.parse(localStorage.getItem("user")); // Load user from localStorage
+
+        console.log("Stored user:", storedUser); // Debugging log to check the user
 
         if (storedUser.role === "doctor" && !storedUser.doctorApproved) {
           window.alert("Your doctor account is not approved yet. Please wait for admin confirmation.");
           return;
         }
 
-        // Обновляем контекст с новым пользователем
+        // Update context with the new user
         setUser(storedUser);
 
         window.alert("Login successful!");
@@ -30,14 +34,15 @@ function Login() {
         setPassword("");
 
         if (storedUser.role === "doctor") {
-          navigate("/doctorPage"); // Навигация на страницу доктора
+          navigate("/doctorPage"); // Navigate to doctor page
         } else {
-          navigate("/dashboard"); // Навигация на панель пациента
+          navigate("/dashboard"); // Navigate to patient dashboard
         }
       } else {
-        window.alert(result);
+        window.alert("Login error: " + result);  // Log detailed error message
       }
     } catch (error) {
+      console.error("Login failed:", error);  // Log the error in case of failure
       window.alert("Login failed. Please try again.");
     }
   };

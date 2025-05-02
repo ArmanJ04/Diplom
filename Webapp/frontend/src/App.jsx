@@ -25,7 +25,7 @@ function App() {
           <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/login" />} />
           <Route path="/prediction" element={user ? <Prediction /> : <Navigate to="/login" />} />
           <Route path="/profile" element={user ? <Profile /> : <Navigate to="/login" />} />
-          <Route path="/doctor" element={<DoctorPage />} />
+          <Route path="/doctorPage" element={<DoctorPage />} />
         <Route path="/doctor/patients/:uin/predictions" element={<PredictionList />} />
         </Routes>
       </div>
