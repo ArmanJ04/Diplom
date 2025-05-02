@@ -33,7 +33,10 @@ function Profile() {
     }
 
     const userData = { ...user };
-    setFormData(userData);
+    setFormData({
+      ...userData,
+      birthdate: formatDateForInput(userData.birthdate),
+    });
 
     if (
       user.role === "patient" &&
@@ -45,7 +48,7 @@ function Profile() {
       setEditable(true);
     }
 
-    fetchHistory(user.uin); // Теперь ищем по UIN, а не email
+    fetchHistory(user.uin);
   }, [user, navigate]);
 
   const fetchHistory = async (uin) => {
@@ -73,33 +76,44 @@ function Profile() {
   const handleSave = async () => {
     const formattedData = {
       ...formData,
-      birthdate: formatDateForSave(formData.birthdate),
+      birthdate: formatDateForInput(formData.birthdate),
     };
-    await updateUser(formattedData); // Здесь изменяется данные пользователя через API
+    await updateUser(formattedData);
     setEditable(false);
     localStorage.setItem("user", JSON.stringify(formattedData));
   };
 
   const formatDateForInput = (dateString) => {
+    if (!dateString) return "";
     const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "";
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const day = String(date.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
-  };  
+  };
 
   const formatDateForDisplay = (dateString) => {
     const options = { day: "2-digit", month: "short", year: "numeric" };
     return new Date(dateString).toLocaleDateString("en-GB", options);
   };
 
-  const formatDateForSave = (dateString) => {
-    const date = new Date(dateString);
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = date.toLocaleString("default", { month: "short" });
-    const year = date.getFullYear();
-    return `${day}-${month}-${year}`;
+  const formatPrediction = (prediction) => {
+    const num = typeof prediction === "number" ? prediction * 100 : parseFloat(prediction) * 100;
+    if (!isNaN(num)) {
+      return num.toFixed(2) + "%";
+    }
+    return prediction;
   };
+  
+  const getPredictionColor = (prediction) => {
+    const percent = typeof prediction === "number" ? prediction * 100 : parseFloat(prediction) * 100;
+    if (percent < 30) return "green";     // низкий риск
+    if (percent < 70) return "orange";    // средний риск
+    return "red";                         // высокий риск
+  };
+  
+  
 
   if (!user) return <p>Loading...</p>;
 
@@ -142,7 +156,7 @@ function Profile() {
       <input
         type="date"
         name="birthdate"
-        value={formatDateForInput(formData.birthdate)}
+        value={formData.birthdate}
         onChange={handleChange}
         required
       />
@@ -222,8 +236,7 @@ function Profile() {
               <strong>UIN:</strong> {formData.uin}
             </p>
             <p>
-              <strong>Birthdate:</strong>{" "}
-              {formatDateForDisplay(formData.birthdate)}
+              <strong>Birthdate:</strong> {formatDateForDisplay(formData.birthdate)}
             </p>
             <p>
               <strong>Height:</strong> {formData.height} cm
@@ -241,8 +254,7 @@ function Profile() {
               <strong>Alcohol:</strong> {formData.alcohol ? "Yes" : "No"}
             </p>
             <p>
-              <strong>Physical Activity:</strong>{" "}
-              {formData.physicalActivity} hrs/week
+              <strong>Physical Activity:</strong> {formData.physicalActivity} hrs/week
             </p>
             <button onClick={() => setEditable(true)}>Edit</button>
           </>
@@ -255,9 +267,13 @@ function Profile() {
           <ul>
             {history.map((item, index) => (
               <li key={index}>
-                <p>
-                  <strong>Prediction:</strong> {item.prediction}
-                </p>
+<p>
+  <strong>Prediction:</strong>{" "}
+  <span style={{ color: getPredictionColor(item.prediction) }}>
+    {formatPrediction(item.prediction)}
+  </span>
+</p>
+
                 <p>
                   <strong>Date:</strong>{" "}
                   {new Date(item.timestamp).toLocaleString()}

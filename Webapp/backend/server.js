@@ -6,7 +6,7 @@ const cookieParser = require("cookie-parser");
 const authRoutes = require("./routes/authRoutes");
 const aiRoutes = require("./routes/aiRoutes");
 const predictionRoutes = require("./routes/predictionRoutes");
-const doctorRoutes = require("./routes/doctorRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 
 const app = express();
 
@@ -42,7 +42,7 @@ app.post("/api/auth/logout", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/ai", aiRoutes);
 app.use("/api/prediction", predictionRoutes);
-app.use("/api/doctor", doctorRoutes);
+app.use("/api/admin", adminRoutes);
 
 
 app.listen(PORT, () => {

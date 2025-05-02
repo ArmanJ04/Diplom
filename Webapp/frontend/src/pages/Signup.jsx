@@ -39,11 +39,12 @@ function Signup() {
     try {
       await signup(formData);
       window.alert("Signup successful!");
-
+  
       if (formData.role === "patient") {
         navigate("/profile");
-      } else {
-        navigate("/dashboard");
+      } else if (formData.role === "doctor") {
+        window.alert("Your account must be verified by an administrator before full access.");
+        navigate("/doctorPage"); // 👈 заменено здесь
       }
     } catch (error) {
       window.alert("Signup failed. Please try again.");
