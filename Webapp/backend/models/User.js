@@ -4,9 +4,14 @@ const userSchema = new mongoose.Schema({
   role: { type: String, enum: ["doctor", "patient"], required: true },
   firstName: String,
   lastName: String,
-  uin: { type: String, unique: true, required: true },
+  uin: { type: String, required: true, unique: true },
   email: { type: String, unique: true, required: true },
   password: { type: String, required: true },
+  doctorApproved: {
+    type: Boolean,
+    default: undefined, // поле будет создано только если явно передано
+    select: true,
+  },
   birthdate: Date,
   gender: String,
   height: Number,
@@ -16,7 +21,6 @@ const userSchema = new mongoose.Schema({
   smoking: Boolean,
   alcohol: Boolean,
   physicalActivity: String,
-  doctorApproved: { type: Boolean, default: false },  // Add doctor approval flag
-
 });
+
 module.exports = mongoose.model("User", userSchema);

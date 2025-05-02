@@ -38,8 +38,9 @@ export const AuthProvider = ({ children }) => {
         const userData = res.data.user;
         setUser(userData);
         localStorage.setItem("user", JSON.stringify(userData));
-
         return "success";
+      } else {
+        return res.data.message || "Login failed.";
       }
     } catch (error) {
       console.error("Login failed:", error.response?.data?.message || error.message);
@@ -48,11 +49,15 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
-    await axios.post("http://localhost:5000/api/auth/logout", {}, {
-      withCredentials: true,
-    });
-    setUser(null);
-    localStorage.removeItem("user");
+    try {
+      await axios.post("http://localhost:5000/api/auth/logout", {}, {
+        withCredentials: true,
+      });
+      setUser(null);
+      localStorage.removeItem("user");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
   };
 
   const updateUser = async (updatedData) => {
@@ -78,12 +83,13 @@ export const AuthProvider = ({ children }) => {
       setUser(newUser);
       localStorage.setItem("user", JSON.stringify(newUser));
 
-      await login(userData.uin, userData.password); // Fix here: use `uin`
+      await login(userData.uin, userData.password);
 
-      return newUser;
+      return { status: "success", user: newUser };
     } catch (error) {
-      console.error("Sign-up failed:", error.response?.data?.message || error.message);
-      return null;
+      const message = error.response?.data?.message || "Signup failed";
+      console.error("Sign-up failed:", message);
+      return { status: "error", message };
     }
   };
 

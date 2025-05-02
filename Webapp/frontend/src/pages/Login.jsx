@@ -3,23 +3,42 @@ import { AuthContext } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 
 function Login() {
-  const [uin, setUin] = useState(""); // Changed from 'email' to 'uin'
+  const [uin, setUin] = useState("");
   const [password, setPassword] = useState("");
-  const { login } = useContext(AuthContext);
+  const { login, setUser } = useContext(AuthContext); // Добавим setUser для обновления контекста
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const result = await login(uin, password); // Use 'uin' instead of 'email'
+    try {
+      const result = await login(uin, password);
 
-    if (result === "success") {
-      window.alert("Login successful!");
-      setUin(""); // Reset UIN field
-      setPassword(""); // Reset password field
-      navigate("/dashboard");
-    } else {
-      window.alert(result); // Display the error message
+      if (result === "success") {
+        const storedUser = JSON.parse(localStorage.getItem("user")); // Загружаем пользователя из localStorage
+
+        if (storedUser.role === "doctor" && !storedUser.doctorApproved) {
+          window.alert("Your doctor account is not approved yet. Please wait for admin confirmation.");
+          return;
+        }
+
+        // Обновляем контекст с новым пользователем
+        setUser(storedUser);
+
+        window.alert("Login successful!");
+        setUin("");
+        setPassword("");
+
+        if (storedUser.role === "doctor") {
+          navigate("/doctorPage"); // Навигация на страницу доктора
+        } else {
+          navigate("/dashboard"); // Навигация на панель пациента
+        }
+      } else {
+        window.alert(result);
+      }
+    } catch (error) {
+      window.alert("Login failed. Please try again.");
     }
   };
 
@@ -28,10 +47,10 @@ function Login() {
       <h2>Login</h2>
       <form onSubmit={handleSubmit}>
         <input
-          type="text" // Changed input type from 'email' to 'text' for UIN
-          placeholder="UIN" // Updated placeholder to "UIN"
+          type="text"
+          placeholder="UIN"
           value={uin}
-          onChange={(e) => setUin(e.target.value)} // Use 'uin' state instead of 'email'
+          onChange={(e) => setUin(e.target.value)}
           required
         />
         <input

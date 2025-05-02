@@ -7,6 +7,8 @@ import Signup from "./pages/Signup";
 import Prediction from "./pages/Prediction";
 import Navbar from "./components/Navbar";
 import Profile from "./pages/Profile";
+import PredictionList from "./components/PredictionList";
+import DoctorPage from "./pages/DoctorPage";
 import "./styles/styles.css";
 
 function App() {
@@ -23,6 +25,8 @@ function App() {
           <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/login" />} />
           <Route path="/prediction" element={user ? <Prediction /> : <Navigate to="/login" />} />
           <Route path="/profile" element={user ? <Profile /> : <Navigate to="/login" />} />
+          <Route path="/doctor" element={<DoctorPage />} />
+        <Route path="/doctor/patients/:uin/predictions" element={<PredictionList />} />
         </Routes>
       </div>
     </div>
