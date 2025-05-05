@@ -4,7 +4,6 @@ const jwt = require("jsonwebtoken");
 
 const SECRET_KEY = process.env.JWT_SECRET || "your_secret_key";
 
-// === REGISTER ===
 exports.register = async (req, res) => {
   try {
     const { role, firstName, lastName, uin, email, password } = req.body;
@@ -61,7 +60,6 @@ exports.register = async (req, res) => {
   }
 };
 
-// === LOGIN ===
 exports.login = async (req, res) => {
   const { uin, password } = req.body;
 
@@ -76,23 +74,24 @@ exports.login = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
 
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
+    const token = jwt.sign({ userId: user._id }, SECRET_KEY, { expiresIn: "1d" });
+
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "Strict",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
-    res.json({ message: "Login successful", user });
+
     const { password: pw, ...userData } = user._doc;
-    res.json({ user: userData, token });
+
+    return res.json({ message: "Login successful", user: userData, token });
   } catch (error) {
     console.error("Login error:", error);
-    res.status(500).json({ message: "Server error" });
+    return res.status(500).json({ message: "Server error" });
   }
 };
 
-// === CHECK AUTH ===
 exports.checkAuth = async (req, res) => {
   const token = req.cookies.token;
   if (!token) return res.status(401).json({ message: "Not authenticated" });
@@ -101,7 +100,8 @@ exports.checkAuth = async (req, res) => {
     if (err) return res.status(403).json({ message: "Invalid token" });
 
     try {
-      const user = await User.findById(decoded.id).select("-password");
+      const userId = decoded.userId; // 🔥 Используем userId!
+      const user = await User.findById(userId).select("-password");
       if (!user) return res.status(404).json({ message: "User not found" });
 
       res.json({ user });
@@ -112,7 +112,6 @@ exports.checkAuth = async (req, res) => {
   });
 };
 
-// === LOGOUT ===
 exports.logout = (req, res) => {
   res.clearCookie("token");
   res.status(200).json({ message: "Logged out successfully" });

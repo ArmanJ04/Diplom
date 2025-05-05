@@ -1,3 +1,4 @@
+// Login.jsx
 import { useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
@@ -21,6 +22,7 @@ function Login() {
 
         console.log("Stored user:", storedUser); // Debugging log to check the user
 
+        // Check if doctor is approved
         if (storedUser.role === "doctor" && !storedUser.doctorApproved) {
           window.alert("Your doctor account is not approved yet. Please wait for admin confirmation.");
           return;
@@ -33,6 +35,7 @@ function Login() {
         setUin("");
         setPassword("");
 
+        // Redirection based on user role
         if (storedUser.role === "doctor") {
           navigate("/doctorPage"); // Navigate to doctor page
         } else {
