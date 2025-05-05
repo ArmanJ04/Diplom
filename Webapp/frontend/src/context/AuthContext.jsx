@@ -1,3 +1,4 @@
+// AuthContext.js
 import { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
 
@@ -7,13 +8,24 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Check for the user in localStorage when the app loads
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser)); // Set user state from localStorage
+    } else {
+      checkAuth(); // If no user in localStorage, check auth from API
+    }
+  }, []);
+
+  // Function to check the user auth from the backend (called after loading user from localStorage)
   const checkAuth = async () => {
     try {
       const res = await axios.get("http://localhost:5000/api/auth/check-auth", {
         withCredentials: true,
       });
       setUser(res.data.user);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
+      localStorage.setItem("user", JSON.stringify(res.data.user)); // Store the user in localStorage
     } catch (error) {
       setUser(null);
       localStorage.removeItem("user");
@@ -21,10 +33,6 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    checkAuth();
-  }, []);
 
   const login = async (uin, password) => {
     try {

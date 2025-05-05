@@ -9,9 +9,10 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
   doctorApproved: {
     type: Boolean,
-    default: undefined, // поле будет создано только если явно передано
+    default: undefined, // will be explicitly set
     select: true,
   },
+  emailVerified: { type: Boolean, default: false },
   birthdate: Date,
   gender: String,
   height: Number,
