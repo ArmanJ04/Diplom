@@ -8,31 +8,24 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Check for the user in localStorage when the app loads
+  // Always check auth with backend on initial load
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser)); // Set user state from localStorage
-    } else {
-      checkAuth(); // If no user in localStorage, check auth from API
-    }
+    const verifyAuth = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/api/auth/check-auth", {
+          withCredentials: true,
+        });
+        setUser(res.data.user);
+        localStorage.setItem("user", JSON.stringify(res.data.user));
+      } catch (error) {
+        setUser(null);
+        localStorage.removeItem("user");
+      } finally {
+        setLoading(false);
+      }
+    };
+    verifyAuth();
   }, []);
-
-  // Function to check the user auth from the backend (called after loading user from localStorage)
-  const checkAuth = async () => {
-    try {
-      const res = await axios.get("http://localhost:5000/api/auth/check-auth", {
-        withCredentials: true,
-      });
-      setUser(res.data.user);
-      localStorage.setItem("user", JSON.stringify(res.data.user)); // Store the user in localStorage
-    } catch (error) {
-      setUser(null);
-      localStorage.removeItem("user");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const login = async (uin, password) => {
     try {
@@ -46,13 +39,14 @@ export const AuthProvider = ({ children }) => {
         const userData = res.data.user;
         setUser(userData);
         localStorage.setItem("user", JSON.stringify(userData));
-        return "success";
+        return { status: "success", user: userData }; // Return user data
       } else {
-        return res.data.message || "Login failed.";
+        // This case might not be hit if server sends non-200 for errors
+        return { status: "error", message: res.data.message || "Login failed." };
       }
     } catch (error) {
       console.error("Login failed:", error.response?.data?.message || error.message);
-      return error.response?.data?.message || "Invalid credentials. Please try again.";
+      return { status: "error", message: error.response?.data?.message || "Invalid credentials. Please try again." };
     }
   };
 
@@ -61,10 +55,12 @@ export const AuthProvider = ({ children }) => {
       await axios.post("http://localhost:5000/api/auth/logout", {}, {
         withCredentials: true,
       });
-      setUser(null);
-      localStorage.removeItem("user");
     } catch (error) {
       console.error("Logout failed:", error);
+      // Still proceed to clear client-side state even if server call fails
+    } finally {
+      setUser(null);
+      localStorage.removeItem("user");
     }
   };
 
@@ -73,16 +69,19 @@ export const AuthProvider = ({ children }) => {
       const res = await axios.put("http://localhost:5000/api/auth/update", updatedData, {
         withCredentials: true,
       });
-
+      // Assuming the backend returns the updated user object in res.data.user
       setUser(res.data.user);
       localStorage.setItem("user", JSON.stringify(res.data.user));
+      return { status: "success", user: res.data.user };
     } catch (error) {
       console.error("Profile update failed:", error.response?.data?.message || error.message);
+      throw error; // Re-throw the error so the component can catch it
     }
   };
 
   const signup = async (userData) => {
     try {
+      // This assumes your backend /register route will set the auth cookie upon successful registration
       const res = await axios.post("http://localhost:5000/api/auth/register", userData, {
         withCredentials: true,
       });
@@ -90,9 +89,7 @@ export const AuthProvider = ({ children }) => {
       const newUser = res.data.user;
       setUser(newUser);
       localStorage.setItem("user", JSON.stringify(newUser));
-
-      await login(userData.uin, userData.password);
-
+      // No need to call login() if register sets the auth cookie and returns the user
       return { status: "success", user: newUser };
     } catch (error) {
       const message = error.response?.data?.message || "Signup failed";
@@ -102,8 +99,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, setUser, signup, login, logout, updateUser, checkAuth, loading }}>
-      {children}
+    <AuthContext.Provider value={{ user, setUser, signup, login, logout, updateUser, loading }}>
+      {!loading && children}
     </AuthContext.Provider>
   );
 };
