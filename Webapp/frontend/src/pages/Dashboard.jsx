@@ -12,13 +12,14 @@ function Dashboard() {
   };
 
   return (
-    <div className="container">
-      <h1>Welcome, {user?.name}</h1>
-      <p>Manage your health with AI-driven predictions.</p>
+    <div className="flex flex-col items-center justify-center p-6 space-y-6 bg-gray-50 rounded-lg shadow-md">
+      <h1 className="text-3xl font-semibold text-primary">Welcome, {user?.name}</h1>
+      <p className="text-lg text-gray-600">Manage your health with AI-driven predictions.</p>
       <Link to="/prediction">
-        <button>Make Prediction</button>
+        <button className="px-6 py-2 bg-primary text-white rounded-md hover:bg-primary-dark transition">
+          Make Prediction
+        </button>
       </Link>
-      <button onClick={handleLogout} style={{ marginTop: "10px", backgroundColor: "#dc3545" }}>Logout</button>
     </div>
   );
 }

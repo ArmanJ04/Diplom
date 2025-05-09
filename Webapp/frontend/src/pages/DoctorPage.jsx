@@ -27,18 +27,23 @@ function DoctorPage() {
   };
 
   return (
-    <div className="container">
-      <h2>Doctor Dashboard</h2>
+    <div className="container p-6 space-y-6">
+      <h2 className="text-3xl font-semibold text-primary">Doctor Dashboard</h2>
       {loading ? (
-        <p>Loading patients...</p>
+        <p className="text-lg text-gray-600">Loading patients...</p>
       ) : (
         <div>
-          <h3>Patients</h3>
-          <ul>
+          <h3 className="text-xl font-semibold text-gray-700">Patients</h3>
+          <ul className="space-y-4">
             {patients.map((patient) => (
-              <li key={patient._id}>
-                <p>{patient.firstName} {patient.lastName} ({patient.uin})</p>
-                <button onClick={() => handleViewPredictions(patient.uin)}>View Predictions</button>
+              <li key={patient._id} className="flex justify-between items-center p-4 bg-gray-100 rounded-md shadow-sm">
+                <p className="text-lg font-medium">{patient.firstName} {patient.lastName} ({patient.uin})</p>
+                <button
+                  onClick={() => handleViewPredictions(patient.uin)}
+                  className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark transition"
+                >
+                  View Predictions
+                </button>
               </li>
             ))}
           </ul>

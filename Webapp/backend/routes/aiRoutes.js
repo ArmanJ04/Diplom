@@ -42,5 +42,35 @@ router.post("/predict", (req, res) => {
         }
     });
 });
-
+// In `aiRoutes.js` or wherever predictions are generated
+const generateRecommendation = (predictionResult) => {
+    // Example recommendation logic based on prediction result
+    if (predictionResult === "high-risk") {
+      return "We recommend immediate medical attention and lifestyle changes.";
+    } else if (predictionResult === "moderate-risk") {
+      return "Regular monitoring and a healthier lifestyle are advised.";
+    } else {
+      return "You are at low risk. Maintain a healthy lifestyle.";
+    }
+  };
+  
+  exports.createPrediction = async (req, res) => {
+    const { clientId, predictionResult } = req.body;
+    
+    const recommendation = generateRecommendation(predictionResult);
+  
+    try {
+      const client = await User.findById(clientId);
+      if (!client) return res.status(404).json({ message: "Client not found" });
+  
+      // Send recommendation to doctor (example)
+      sendNotification(client.email, "Prediction and Recommendations", recommendation);
+  
+      res.status(200).json({ message: "Prediction created and doctor notified" });
+    } catch (error) {
+      console.error("Error creating prediction:", error);
+      res.status(500).json({ message: "Server error" });
+    }
+  };
+  
 module.exports = router;

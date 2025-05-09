@@ -12,11 +12,16 @@ router.get("/pending-doctors", async (req, res) => {
   }
 });
 
-// Подтвердить доктора
+// In `adminRoutes.js`
 router.post("/approve-doctor/:id", async (req, res) => {
   try {
-    const updated = await User.findByIdAndUpdate(req.params.id, { doctorApproved: true }, { new: true });
-    res.json(updated);
+    const updatedDoctor = await User.findByIdAndUpdate(
+      req.params.id, 
+      { doctorApproved: true }, 
+      { new: true }
+    );
+
+    res.status(200).json({ message: "Doctor approved successfully", updatedDoctor });
   } catch (error) {
     res.status(500).json({ message: "Server error" });
   }
