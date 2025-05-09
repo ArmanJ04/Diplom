@@ -25,42 +25,38 @@ function Signup() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!/^\d{12}$/.test(formData.uin)) {
-      window.alert("UIN must be exactly 12 digits.");
+      alert("UIN must be exactly 12 digits.");
       return;
     }
-
     if (formData.password.length < 8) {
-      window.alert("Password must be at least 8 characters long.");
+      alert("Password must be at least 8 characters long.");
       return;
     }
-
     try {
       await signup(formData);
-      window.alert("Signup successful!");
-  
-      if (formData.role === "patient") {
-        navigate("/profile");
-      } else if (formData.role === "doctor") {
-        window.alert("Your account must be verified by an administrator before full access.");
-        navigate("/doctorPage"); // 👈 заменено здесь
-      }
+      alert("Signup successful!");
+      navigate("/profile");
     } catch (error) {
-      window.alert("Signup failed. Please try again.");
+      alert("Signup failed. Please try again.");
     }
   };
 
   return (
-    <div className="container">
-      <h2>Sign Up</h2>
-      <form onSubmit={handleSubmit}>
-        <select name="role" value={formData.role} onChange={handleChange} required>
+    <div className="flex flex-col items-center justify-center h-screen bg-gray-50 p-6 space-y-6">
+      <h2 className="text-3xl font-semibold">Sign Up</h2>
+      <form onSubmit={handleSubmit} className="space-y-4 w-full max-w-sm">
+        <select
+          name="role"
+          value={formData.role}
+          onChange={handleChange}
+          required
+          className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+        >
           <option value="">Select Role</option>
           <option value="patient">Patient</option>
           <option value="doctor">Doctor</option>
         </select>
-
         <input
           type="text"
           name="firstName"
@@ -68,8 +64,8 @@ function Signup() {
           value={formData.firstName}
           onChange={handleChange}
           required
+          className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
         />
-
         <input
           type="text"
           name="lastName"
@@ -77,17 +73,17 @@ function Signup() {
           value={formData.lastName}
           onChange={handleChange}
           required
+          className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
         />
-
         <input
           type="text"
           name="uin"
-          placeholder="UIN (12 digits)"
+          placeholder="UIN"
           value={formData.uin}
           onChange={handleChange}
           required
+          className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
         />
-
         <input
           type="email"
           name="email"
@@ -95,8 +91,8 @@ function Signup() {
           value={formData.email}
           onChange={handleChange}
           required
+          className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
         />
-
         <input
           type="password"
           name="password"
@@ -104,13 +100,14 @@ function Signup() {
           value={formData.password}
           onChange={handleChange}
           required
+          className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
         />
-
-        <button type="submit">Sign Up</button>
+        <button type="submit" className="w-full py-2 bg-primary text-white rounded-md hover:bg-primary-dark transition">
+          Sign Up
+        </button>
       </form>
-
       <p>
-        Already have an account? <Link to="/login">Login here</Link>
+        Already have an account? <Link to="/login" className="text-primary">Log in here</Link>
       </p>
     </div>
   );

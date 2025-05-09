@@ -1,4 +1,3 @@
-// Login.jsx
 import { useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
@@ -6,60 +5,40 @@ import { useNavigate, Link } from "react-router-dom";
 function Login() {
   const [uin, setUin] = useState("");
   const [password, setPassword] = useState("");
-  const { login, setUser } = useContext(AuthContext); // Add setUser to update context
+  const { login, setUser } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
       const result = await login(uin, password);
-
-      console.log("Login result:", result);  // Debugging log to check the result
-
       if (result === "success") {
-        const storedUser = JSON.parse(localStorage.getItem("user")); // Load user from localStorage
-
-        console.log("Stored user:", storedUser); // Debugging log to check the user
-
-        // Check if doctor is approved
-        if (storedUser.role === "doctor" && !storedUser.doctorApproved) {
-          window.alert("Your doctor account is not approved yet. Please wait for admin confirmation.");
-          return;
-        }
-
-        // Update context with the new user
+        const storedUser = JSON.parse(localStorage.getItem("user"));
         setUser(storedUser);
-
-        window.alert("Login successful!");
-        setUin("");
-        setPassword("");
-
-        // Redirection based on user role
         if (storedUser.role === "doctor") {
-          navigate("/doctorPage"); // Navigate to doctor page
+          navigate("/doctorPage");
         } else {
-          navigate("/dashboard"); // Navigate to patient dashboard
+          navigate("/dashboard");
         }
       } else {
-        window.alert("Login error: " + result);  // Log detailed error message
+        alert("Login failed");
       }
     } catch (error) {
-      console.error("Login failed:", error);  // Log the error in case of failure
-      window.alert("Login failed. Please try again.");
+      alert("Login failed");
     }
   };
 
   return (
-    <div className="container">
-      <h2>Login</h2>
-      <form onSubmit={handleSubmit}>
+    <div className="flex flex-col items-center justify-center h-screen space-y-6 bg-gray-50 p-6">
+      <h2 className="text-3xl font-semibold">Login</h2>
+      <form onSubmit={handleSubmit} className="space-y-4 w-full max-w-sm">
         <input
           type="text"
           placeholder="UIN"
           value={uin}
           onChange={(e) => setUin(e.target.value)}
           required
+          className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
         />
         <input
           type="password"
@@ -67,10 +46,15 @@ function Login() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
+          className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
         />
-        <button type="submit">Login</button>
+        <button type="submit" className="w-full py-2 bg-primary text-white rounded-md hover:bg-primary-dark transition">
+          Login
+        </button>
       </form>
-      <p>Don't have an account? <Link to="/signup">Sign up here</Link></p>
+      <p>
+        Don't have an account? <Link to="/signup" className="text-primary">Sign up here</Link>
+      </p>
     </div>
   );
 }

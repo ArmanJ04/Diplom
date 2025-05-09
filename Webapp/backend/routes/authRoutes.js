@@ -1,16 +1,16 @@
 const express = require("express");
 const {
   register,
-  verifyEmail,
   requestPasswordReset,
   resetPassword,
+  login,           // ✅ добавлено
+  checkAuth        // ✅ добавлено
 } = require("../controllers/authController");
 const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
 router.post("/register", register);
-router.get("/verify-email/:token", verifyEmail);
 router.post("/request-password-reset", requestPasswordReset);
 router.post("/reset-password/:token", resetPassword);
 router.post("/login", login);

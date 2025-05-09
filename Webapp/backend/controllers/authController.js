@@ -1,9 +1,18 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const nodemailer = require("nodemailer");
 
 const SECRET_KEY = process.env.JWT_SECRET || "your_secret_key";
 
+// Create a transporter for Nodemailer
+const transporter = nodemailer.createTransport({
+  service: "gmail", // You can use other services like SendGrid, Mailgun, etc.
+  auth: {
+    user: process.env.EMAIL_USER,  // Your email (e.g. "example@gmail.com")
+    pass: process.env.EMAIL_PASS   // Your email password or app-specific password
+  }
+});
 exports.register = async (req, res) => {
   try {
     const { role, firstName, lastName, uin, email, password } = req.body;
@@ -33,12 +42,13 @@ exports.register = async (req, res) => {
     };
 
     if (role === "doctor") {
-      userData.doctorApproved = false;
+      userData.doctorApproved = false;  // Doctor needs to be approved by admin
     }
 
     const newUser = new User(userData);
     await newUser.save();
 
+    // Generate JWT token for user
     const token = jwt.sign({ id: newUser._id }, SECRET_KEY, { expiresIn: "1h" });
 
     const { password: _, ...userDataSafe } = newUser._doc;
@@ -100,7 +110,7 @@ exports.checkAuth = async (req, res) => {
     if (err) return res.status(403).json({ message: "Invalid token" });
 
     try {
-      const userId = decoded.userId; // 🔥 Используем userId!
+      const userId = decoded.userId;
       const user = await User.findById(userId).select("-password");
       if (!user) return res.status(404).json({ message: "User not found" });
 
@@ -110,6 +120,88 @@ exports.checkAuth = async (req, res) => {
       res.status(500).json({ message: "Server error" });
     }
   });
+};
+
+exports.requestPasswordReset = async (req, res) => {
+  const { email } = req.body;
+  try {
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const token = jwt.sign({ id: user._id }, RESET_SECRET, { expiresIn: "15m" });
+
+    const resetUrl = `${process.env.CLIENT_URL}/reset-password/${token}`;
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Password Reset Request",
+      html: `<p>Click <a href="${resetUrl}">here</a> to reset your password. This link is valid for 15 minutes.</p>`
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.status(200).json({ message: "Password reset email sent" });
+  } catch (err) {
+    console.error("Reset request error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+exports.resetPassword = async (req, res) => {
+  const token = req.params.token;
+  const { password } = req.body;
+
+  try {
+    const decoded = jwt.verify(token, RESET_SECRET);
+    const user = await User.findById(decoded.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const hashedPassword = await bcrypt.hash(password, 12);
+    user.password = hashedPassword;
+    await user.save();
+
+    res.status(200).json({ message: "Password reset successful" });
+  } catch (err) {
+    console.error("Reset error:", err);
+    res.status(400).json({ message: "Invalid or expired token" });
+  }
+};
+const sendNotification = (recipientEmail, subject, message) => {
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: recipientEmail,
+    subject: subject,
+    html: `<p>${message}</p>`
+  };
+
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.log("Notification email error:", error);
+    } else {
+      console.log("Notification email sent:", info.response);
+    }
+  });
+};
+
+// Example: Sending notification when a doctor confirms a prediction
+exports.confirmPrediction = async (req, res) => {
+  const { clientId, predictionId } = req.body;
+
+  try {
+    const client = await User.findById(clientId);
+    if (!client) return res.status(404).json({ message: "Client not found" });
+
+    // Assuming prediction confirmation logic here
+
+    const message = "Your prediction has been confirmed by your doctor.";
+    sendNotification(client.email, "Prediction Confirmed", message);
+
+    res.status(200).json({ message: "Prediction confirmed and client notified." });
+  } catch (error) {
+    console.error("Error confirming prediction:", error);
+    res.status(500).json({ message: "Server error" });
+  }
 };
 
 exports.logout = (req, res) => {
