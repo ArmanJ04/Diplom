@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import { useAlert } from '../context/AlertContext';
 
 function Home() {
   return (
