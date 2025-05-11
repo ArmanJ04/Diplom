@@ -1,5 +1,7 @@
+// Redesigned Prediction.jsx (Step-by-Step Medical Form)
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
+import { LoaderCircle } from "lucide-react";
 
 const Prediction = () => {
   const { user } = useAuth();
@@ -21,9 +23,9 @@ const Prediction = () => {
 
   useEffect(() => {
     if (user) {
-      setInputData((prevState) => ({
-        ...prevState,
-        birthdate: formatDateForInput(user.birthdate) || "",
+      setInputData((prev) => ({
+        ...prev,
+        birthdate: formatDateForInput(user.birthdate),
         height: user.height || "",
         weight: user.weight || "",
         gender: user.gender || "male",
@@ -34,8 +36,8 @@ const Prediction = () => {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setInputData((prevState) => ({
-      ...prevState,
+    setInputData((prev) => ({
+      ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
   };
@@ -44,14 +46,12 @@ const Prediction = () => {
     const birthDate = new Date(birthdate);
     const currentDate = new Date();
     const ageInMilliseconds = currentDate - birthDate;
-    const ageInDays = Math.floor(ageInMilliseconds / (1000 * 60 * 60 * 24));
-    return ageInDays;
+    return Math.floor(ageInMilliseconds / (1000 * 60 * 60 * 24));
   };
 
   const handleSubmit = async () => {
     setLoading(true);
     setResult(null);
-
     try {
       const ageInDays = calculateAgeInDays(inputData.birthdate);
 
@@ -71,34 +71,18 @@ const Prediction = () => {
         ],
       };
 
-      console.log("Submitting Data:", formattedData);
-
-      // Fetch Prediction
       const response = await fetch("http://localhost:5000/api/ai/predict", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formattedData),
       });
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch prediction");
-      }
-
       const data = await response.json();
-      console.log("Prediction Result:", data);
 
-      // Save Prediction to History
-      const saveResponse = await fetch("http://localhost:5000/api/prediction/save", {
+      await fetch("http://localhost:5000/api/prediction/save", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          uin: user.uin, // Use uin instead of email
-          prediction: data.prediction,
-        }),
+        body: JSON.stringify({ uin: user.uin, prediction: data.prediction }),
       });
-
-      const saveResult = await saveResponse.json();
-      console.log("Save Prediction Response:", saveResult);
 
       setResult(data);
     } catch (error) {
@@ -108,79 +92,91 @@ const Prediction = () => {
     }
   };
 
-  const getRiskLevel = (probability) => {
-    if (probability >= 0.7) return "High";
-    if (probability >= 0.4) return "Moderate";
-    return "Low";
+  const formatDateForInput = (date) => {
+    const d = new Date(date);
+    return d.toISOString().split("T")[0];
   };
 
-  const formatDateForInput = (dateString) => {
-    const date = new Date(dateString);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+  const getRiskLevel = (value) => {
+    if (value >= 0.7) return "High Risk";
+    if (value >= 0.4) return "Moderate Risk";
+    return "Low Risk";
   };
 
   return (
-    <div className="prediction-container">
-      <h2>Cardiovascular Disease Prediction</h2>
+    <div className="max-w-2xl mx-auto p-6 bg-white rounded-xl shadow-md mt-10">
+      <h2 className="text-2xl font-semibold text-center text-blue-700 mb-6">Cardiovascular Risk Prediction</h2>
+      <form className="space-y-4">
+        <div>
+          <label className="font-medium">Birthdate</label>
+          <input type="date" name="birthdate" value={inputData.birthdate} onChange={handleChange} className="input" />
+        </div>
 
-      <label>Birthdate:</label>
-      <input type="date" name="birthdate" value={inputData.birthdate} onChange={handleChange} placeholder="Enter your birthdate" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="font-medium">Height (cm)</label>
+            <input type="number" name="height" value={inputData.height} onChange={handleChange} className="input" />
+          </div>
+          <div>
+            <label className="font-medium">Weight (kg)</label>
+            <input type="number" name="weight" value={inputData.weight} onChange={handleChange} className="input" />
+          </div>
+        </div>
 
-      <label>Height (cm):</label>
-      <input type="number" name="height" value={inputData.height} onChange={handleChange} placeholder="Enter your height in cm" />
+        <div>
+          <label className="font-medium">Gender</label>
+          <select name="gender" value={inputData.gender} onChange={handleChange} className="input">
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
+        </div>
 
-      <label>Weight (kg):</label>
-      <input type="number" name="weight" value={inputData.weight} onChange={handleChange} placeholder="Enter your weight in kg" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="font-medium">Systolic BP</label>
+            <input type="number" name="systolicBP" value={inputData.systolicBP} onChange={handleChange} className="input" />
+          </div>
+          <div>
+            <label className="font-medium">Diastolic BP</label>
+            <input type="number" name="diastolicBP" value={inputData.diastolicBP} onChange={handleChange} className="input" />
+          </div>
+        </div>
 
-      <label>Gender:</label>
-      <select name="gender" value={inputData.gender} onChange={handleChange}>
-        <option value="male">Male</option>
-        <option value="female">Female</option>
-      </select>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="font-medium">Cholesterol</label>
+            <select name="cholesterol" value={inputData.cholesterol} onChange={handleChange} className="input">
+              <option value="1">Normal</option>
+              <option value="2">Above Normal</option>
+              <option value="3">Well Above Normal</option>
+            </select>
+          </div>
+          <div>
+            <label className="font-medium">Glucose</label>
+            <select name="glucose" value={inputData.glucose} onChange={handleChange} className="input">
+              <option value="1">Normal</option>
+              <option value="2">Above Normal</option>
+              <option value="3">Well Above Normal</option>
+            </select>
+          </div>
+        </div>
 
-      <label>Systolic Blood Pressure:</label>
-      <input type="number" name="systolicBP" value={inputData.systolicBP} onChange={handleChange} placeholder="Enter systolic BP" />
+        <div className="flex flex-col space-y-2">
+          <label><input type="checkbox" name="smoking" checked={inputData.smoking} onChange={handleChange} /> Smoking</label>
+          <label><input type="checkbox" name="alcoholIntake" checked={inputData.alcoholIntake} onChange={handleChange} /> Alcohol Consumption</label>
+          <label><input type="checkbox" name="physicalActivity" checked={inputData.physicalActivity} onChange={handleChange} /> Physical Activity &gt; 15 hrs/week</label>
+        </div>
 
-      <label>Diastolic Blood Pressure:</label>
-      <input type="number" name="diastolicBP" value={inputData.diastolicBP} onChange={handleChange} placeholder="Enter diastolic BP" />
-
-      <label>Cholesterol Level:</label>
-      <select name="cholesterol" value={inputData.cholesterol} onChange={handleChange}>
-        <option value="1">Normal (Total &lt; 200 mg/dL)</option>
-        <option value="2">Above Normal (Total 200-239 mg/dL)</option>
-        <option value="3">Well Above Normal (Total ≥ 240 mg/dL)</option>
-      </select>
-
-      <label>Glucose Level:</label>
-      <select name="glucose" value={inputData.glucose} onChange={handleChange}>
-        <option value="1">Normal (70-100 mg/dL)</option>
-        <option value="2">Above Normal (100-125 mg/dL)</option>
-        <option value="3">Well Above Normal (≥ 126 mg/dL)</option>
-      </select>
-
-      <label>Smoking:</label>
-      <input type="checkbox" name="smoking" checked={inputData.smoking} onChange={handleChange} />
-
-      <label>Alcohol Intake:</label>
-      <input type="checkbox" name="alcoholIntake" checked={inputData.alcoholIntake} onChange={handleChange} />
-
-      <label>Physical Activity (More than 15 hours/week):</label>
-      <input type="checkbox" name="physicalActivity" checked={inputData.physicalActivity} onChange={handleChange} />
-
-      <button onClick={handleSubmit} disabled={loading}>
-        {loading ? "Processing..." : "Predict Risk"}
-      </button>
-
-      {loading && <p>Loading...</p>}
+        <button type="button" onClick={handleSubmit} disabled={loading} className="w-full bg-blue-600 text-white py-3 rounded-lg text-lg hover:bg-blue-700">
+          {loading ? <span className="flex justify-center items-center gap-2"><LoaderCircle className="animate-spin" /> Predicting...</span> : "Predict Risk"}
+        </button>
+      </form>
 
       {result && (
-        <div className="prediction-result">
-          <h3>Prediction Result:</h3>
-          <p>Risk Percentage: {(result.prediction * 100).toFixed(2)}%</p>
-          <p>Risk Level: <strong>{getRiskLevel(result.prediction)}</strong></p>
+        <div className="mt-6 p-4 bg-gray-100 rounded text-center">
+          <h3 className="text-xl font-semibold text-gray-700 mb-2">Prediction Result</h3>
+          <p className="text-lg">Risk: <span className="font-bold">{(result.prediction * 100).toFixed(2)}%</span></p>
+          <p className="text-base text-gray-600">Level: <span className="font-semibold">{getRiskLevel(result.prediction)}</span></p>
         </div>
       )}
     </div>

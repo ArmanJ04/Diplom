@@ -1,175 +1,185 @@
 const User = require("../models/User");
 const Prediction = require("../models/Prediction");
-const mongoose = require('mongoose');
+const ConnectionRequest = require("../models/ConnectionRequest");
 
-exports.getAssignedPatients = async (req, res) => {
+// Get all patients assigned to the logged-in doctor
+exports.getPatients = async (req, res) => {
   try {
     const doctorId = req.user.userId;
-
-    if (req.user.role === 'doctor' && !req.user.doctorApproved) {
-        return res.status(403).json({ message: "Your doctor account must be approved by an admin to perform this action." });
-    }
-
     const patients = await User.find({
-      role: "client",
+      role: "patient",
       assignedDoctorId: doctorId
-    }).select("-password -__v");
+    }).select("firstName lastName email uin");
+
     res.json(patients);
   } catch (error) {
-    console.error("Error fetching assigned patients:", error);
-    res.status(500).json({ message: "Server error while fetching patients." });
+    console.error("Get patients error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
-exports.getPatientPredictionsByUin = async (req, res) => {
+// Get prediction history of a specific patient (by UIN)
+exports.getPatientPredictions = async (req, res) => {
   const { uin } = req.params;
-  const doctorId = req.user.userId;
 
   try {
-    if (req.user.role === 'doctor' && !req.user.doctorApproved) {
-        return res.status(403).json({ message: "Your doctor account must be approved to view patient data." });
+    const patient = await User.findOne({ uin });
+    if (!patient || patient.role !== "patient") {
+      return res.status(404).json({ message: "Patient not found" });
     }
 
-    const patient = await User.findOne({ uin, role: "client" });
-    if (!patient) {
-      return res.status(404).json({ message: "Patient with this UIN not found." });
-    }
-
-    if (!patient.assignedDoctorId || patient.assignedDoctorId.toString() !== doctorId) {
-         return res.status(403).json({ message: "Forbidden: You are not the assigned doctor for this patient." });
-    }
-
-    const predictions = await Prediction.find({ patientId: patient._id })
-                                        .sort({ createdAt: -1 })
-                                        .populate('doctorId', 'firstName lastName')
-                                        .select("-__v");
+    const predictions = await Prediction.find({ patientId: patient._id });
     res.json(predictions);
   } catch (error) {
-    console.error("Error fetching patient predictions:", error);
-    res.status(500).json({ message: "Server error while fetching predictions." });
+    console.error("Get predictions error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
-exports.validatePrediction = async (req, res) => {
-  const { predictionId } = req.params;
-  const doctorId = req.user.userId;
-  const { comment } = req.body;
-
-
-  if (!mongoose.Types.ObjectId.isValid(predictionId)) {
-    return res.status(400).json({ message: "Invalid Prediction ID format." });
-  }
+// Approve a specific prediction
+exports.approvePrediction = async (req, res) => {
+  const { uin, predictionId } = req.params;
 
   try {
-    if (req.user.role === 'doctor' && !req.user.doctorApproved) {
-        return res.status(403).json({ message: "Your doctor account must be approved to validate predictions." });
-    }
-
     const prediction = await Prediction.findById(predictionId);
     if (!prediction) {
-      return res.status(404).json({ message: "Prediction not found." });
+      return res.status(404).json({ message: "Prediction not found" });
     }
 
-    const patient = await User.findById(prediction.patientId);
-    if (!patient || !patient.assignedDoctorId || patient.assignedDoctorId.toString() !== doctorId) {
-        return res.status(403).json({ message: "Forbidden: You are not authorized to validate predictions for this patient." });
-    }
-
-    prediction.status = "doctor_validated";
-    prediction.doctorId = doctorId;
-    prediction.doctorActionTimestamp = new Date();
-    if (comment) prediction.doctorComment = comment;
-    else if (!prediction.doctorComment) prediction.doctorComment = "Validated by doctor.";
-
-
+    prediction.status = "approved";
     await prediction.save();
-    res.json({ message: "Prediction validated successfully.", prediction });
+
+    res.json({ message: "Prediction approved", prediction });
   } catch (error) {
-    console.error("Error validating prediction:", error);
-    res.status(500).json({ message: "Server error while validating prediction." });
+    console.error("Approve prediction error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
-exports.rejectPrediction = async (req, res) => {
-  const { predictionId } = req.params;
-  const doctorId = req.user.userId;
-  const { comment } = req.body;
-
-  if (!mongoose.Types.ObjectId.isValid(predictionId)) {
-    return res.status(400).json({ message: "Invalid Prediction ID format." });
-  }
-  if (!comment || comment.trim() === "") {
-    return res.status(400).json({ message: "A comment is required to mark a prediction for revision." });
-  }
+// Cancel a specific prediction
+exports.cancelPrediction = async (req, res) => {
+  const { uin, predictionId } = req.params;
 
   try {
-    if (req.user.role === 'doctor' && !req.user.doctorApproved) {
-        return res.status(403).json({ message: "Your doctor account must be approved to reject predictions." });
-    }
-
     const prediction = await Prediction.findById(predictionId);
     if (!prediction) {
-      return res.status(404).json({ message: "Prediction not found." });
+      return res.status(404).json({ message: "Prediction not found" });
     }
 
-    const patient = await User.findById(prediction.patientId);
-     if (!patient || !patient.assignedDoctorId || patient.assignedDoctorId.toString() !== doctorId) {
-        return res.status(403).json({ message: "Forbidden: You are not authorized to reject predictions for this patient." });
-    }
-
-    prediction.status = "doctor_needs_revision";
-    prediction.doctorId = doctorId;
-    prediction.doctorActionTimestamp = new Date();
-    prediction.doctorComment = comment;
-
+    prediction.status = "canceled";
     await prediction.save();
-    res.json({ message: "Prediction marked for revision.", prediction });
+
+    res.json({ message: "Prediction canceled", prediction });
   } catch (error) {
-    console.error("Error rejecting prediction:", error);
-    res.status(500).json({ message: "Server error while rejecting prediction." });
+    console.error("Cancel prediction error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
-exports.addPredictionFeedback = async (req, res) => {
-  const { predictionId } = req.params;
-  const { comment } = req.body;
-  const doctorId = req.user.userId;
+// Browse all unassigned patients (for doctors)
+exports.browseAllClients = async (req, res) => {
+  try {
+    const unassignedPatients = await User.find({
+      role: "patient",
+      assignedDoctorId: { $exists: false }
+    }).select("firstName lastName email uin");
 
-  if (!mongoose.Types.ObjectId.isValid(predictionId)) {
-    return res.status(400).json({ message: "Invalid Prediction ID format." });
+    res.json(unassignedPatients);
+  } catch (error) {
+    console.error("Browse clients error:", error);
+    res.status(500).json({ message: "Server error" });
   }
-  if (!comment || typeof comment !== 'string' || comment.trim() === "") {
-    return res.status(400).json({ message: "Comment is required and cannot be empty." });
+};
+
+// Get list of sent connection requests by a doctor
+exports.getSentConnectionRequests = async (req, res) => {
+  try {
+    const doctorId = req.user.userId;
+    const sent = await ConnectionRequest.find({
+      doctorId,
+      status: "pending_client_approval"
+    }).select("clientId");
+    res.json(sent);
+  } catch (err) {
+    console.error("Get sent requests error:", err);
+    res.status(500).json({ message: "Server error" });
   }
+};
+
+// Send a connection request to a patient
+exports.requestConnection = async (req, res) => {
+  try {
+    const doctorId = req.user.userId;
+    const clientId = req.params.clientId;
+
+    const existing = await ConnectionRequest.findOne({
+      doctorId,
+      clientId,
+      status: "pending_client_approval"
+    });
+
+    if (existing) {
+      return res.status(400).json({ message: "Request already sent." });
+    }
+
+    const request = new ConnectionRequest({ doctorId, clientId });
+    await request.save();
+
+    res.json({ message: "Request sent." });
+  } catch (err) {
+    console.error("Send request error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Patients: View all pending connection requests sent to them
+exports.getPendingRequestsForClient = async (req, res) => {
+  try {
+    const clientId = req.user.userId;
+    const pendingRequests = await ConnectionRequest.find({
+      clientId,
+      status: "pending_client_approval"
+    }).populate("doctorId", "firstName lastName email");
+
+    res.json(pendingRequests);
+  } catch (err) {
+    console.error("Error fetching client requests:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Patients: Respond to a connection request (accept/reject)
+exports.respondToConnectionRequest = async (req, res) => {
+  const clientId = req.user.userId;
+  const { requestId } = req.params;
+  const { action } = req.body; // 'accept' or 'reject'
 
   try {
-    if (req.user.role === 'doctor' && !req.user.doctorApproved) {
-        return res.status(403).json({ message: "Your doctor account must be approved to add feedback." });
+    const request = await ConnectionRequest.findById(requestId);
+
+    if (!request || request.clientId.toString() !== clientId) {
+      return res.status(403).json({ message: "Not authorized or request not found" });
     }
 
-    const prediction = await Prediction.findById(predictionId);
-    if (!prediction) {
-      return res.status(404).json({ message: "Prediction not found." });
+    if (action === "accept") {
+      request.status = "client_accepted";
+      request.responseTimestamp = new Date();
+      await request.save();
+
+      await User.findByIdAndUpdate(clientId, { assignedDoctorId: request.doctorId });
+
+      res.json({ message: "Connection accepted", doctorId: request.doctorId });
+    } else if (action === "reject") {
+      request.status = "client_rejected";
+      request.responseTimestamp = new Date();
+      await request.save();
+
+      res.json({ message: "Connection rejected" });
+    } else {
+      res.status(400).json({ message: "Invalid action" });
     }
-
-    const patient = await User.findById(prediction.patientId);
-    if (!patient || !patient.assignedDoctorId || patient.assignedDoctorId.toString() !== doctorId) {
-        return res.status(403).json({ message: "Forbidden: You are not authorized to add feedback for this patient's prediction." });
-    }
-
-    prediction.doctorComment = comment;
-    prediction.doctorId = doctorId;
-    prediction.doctorActionTimestamp = new Date();
-    
-    if (prediction.status === 'pending_review' || prediction.status === 'client_acknowledged' || prediction.status === 'doctor_commented') {
-        prediction.status = 'doctor_commented';
-    }
-
-
-    await prediction.save();
-    res.json({ message: "Feedback added successfully.", prediction });
-  } catch (error) {
-    console.error("Error adding prediction feedback:", error);
-    res.status(500).json({ message: "Server error while adding feedback." });
+  } catch (err) {
+    console.error("Respond error:", err);
+    res.status(500).json({ message: "Server error" });
   }
 };

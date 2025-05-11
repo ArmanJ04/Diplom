@@ -1,12 +1,17 @@
+// Enhanced Profile.jsx with Working Update, Toggleable History, Search and Sort
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { UserCircle2, CalendarDays, Activity, Flame, Ruler, Weight, HeartPulse, ChevronDown, ChevronUp, Search } from "lucide-react";
 
 function Profile() {
   const { user, updateUser } = useAuth();
   const navigate = useNavigate();
   const [editable, setEditable] = useState(false);
   const [history, setHistory] = useState([]);
+  const [showHistory, setShowHistory] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortOrder, setSortOrder] = useState("desc");
 
   const [formData, setFormData] = useState(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
@@ -27,262 +32,160 @@ function Profile() {
   });
 
   useEffect(() => {
-    if (!user) {
-      navigate("/login");
-      return;
-    }
-
-    const userData = { ...user };
-    setFormData({
-      ...userData,
-      birthdate: formatDateForInput(userData.birthdate),
-    });
-
-    if (
-      user.role === "patient" &&
-      (!userData.birthdate ||
-        !userData.height ||
-        !userData.weight ||
-        !userData.gender)
-    ) {
-      setEditable(true);
-    }
-
+    if (!user) return navigate("/login");
+    setFormData({ ...user, birthdate: formatDateForInput(user.birthdate) });
     fetchHistory(user.uin);
   }, [user, navigate]);
 
   const fetchHistory = async (uin) => {
     try {
-      const response = await fetch(
-        `http://localhost:5000/api/prediction/history?uin=${uin}`
-      );
-      const data = await response.json();
-      if (data.history) {
-        setHistory(data.history);
-      }
-    } catch (error) {
-      console.error("Error fetching history:", error);
+      const res = await fetch(`http://localhost:5000/api/prediction/history?uin=${uin}`);
+      const data = await res.json();
+      setHistory(data.history || []);
+    } catch (err) {
+      console.error("Error loading history", err);
     }
   };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
   };
 
   const handleSave = async () => {
-    const formattedData = {
-      ...formData,
-      birthdate: formatDateForInput(formData.birthdate),
-    };
-    await updateUser(formattedData);
-    setEditable(false);
-    localStorage.setItem("user", JSON.stringify(formattedData));
-  };
-
-  const formatDateForInput = (dateString) => {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return "";
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-  };
-
-  const formatDateForDisplay = (dateString) => {
-    const options = { day: "2-digit", month: "short", year: "numeric" };
-    return new Date(dateString).toLocaleDateString("en-GB", options);
-  };
-
-  const formatPrediction = (prediction) => {
-    const num = typeof prediction === "number" ? prediction * 100 : parseFloat(prediction) * 100;
-    if (!isNaN(num)) {
-      return num.toFixed(2) + "%";
+    const updated = { ...formData, birthdate: formatDateForInput(formData.birthdate) };
+    const updatedUser = await updateUser(updated);
+  
+    if (!updatedUser) {
+      alert("Failed to update profile. Please try again.");
+      return;
     }
-    return prediction;
+    
+  
+    setFormData({
+      ...updatedUser,
+      birthdate: formatDateForInput(updatedUser.birthdate),
+    });
+    setEditable(false);
+    localStorage.setItem("user", JSON.stringify(updatedUser));
   };
   
-  const getPredictionColor = (prediction) => {
-    const percent = typeof prediction === "number" ? prediction * 100 : parseFloat(prediction) * 100;
-    if (percent < 30) return "green";     // низкий риск
-    if (percent < 70) return "orange";    // средний риск
-    return "red";                         // высокий риск
+
+  const formatDateForInput = (date) => {
+    if (!date) return "";
+    return new Date(date).toISOString().split("T")[0];
   };
-  
-  
 
-  if (!user) return <p>Loading...</p>;
+  const getColor = (p) => {
+    const percent = parseFloat(p) * 100;
+    if (percent < 30) return "text-green-600";
+    if (percent < 70) return "text-yellow-600";
+    return "text-red-600";
+  };
 
-  const renderForm = (
-    <>
-      <input
-        type="text"
-        name="firstName"
-        value={formData.firstName}
-        onChange={handleChange}
-        placeholder="First Name"
-        required
-      />
-      <input
-        type="text"
-        name="lastName"
-        value={formData.lastName}
-        onChange={handleChange}
-        placeholder="Last Name"
-        required
-      />
-      <input
-        type="email"
-        name="email"
-        value={formData.email}
-        onChange={handleChange}
-        placeholder="Email"
-        required
-        disabled
-      />
-      <input
-        type="text"
-        name="uin"
-        value={formData.uin}
-        onChange={handleChange}
-        placeholder="UIN"
-        required
-        disabled
-      />
-      <input
-        type="date"
-        name="birthdate"
-        value={formData.birthdate}
-        onChange={handleChange}
-        required
-      />
-      <input
-        type="number"
-        name="height"
-        value={formData.height}
-        onChange={handleChange}
-        placeholder="Height (cm)"
-        required
-      />
-      <input
-        type="number"
-        name="weight"
-        value={formData.weight}
-        onChange={handleChange}
-        placeholder="Weight (kg)"
-        required
-      />
-      <select
-        name="gender"
-        value={formData.gender}
-        onChange={handleChange}
-        required
-      >
-        <option value="">Select Gender</option>
-        <option value="male">Male</option>
-        <option value="female">Female</option>
-      </select>
-      <label>
-        <input
-          type="checkbox"
-          name="smoking"
-          checked={formData.smoking}
-          onChange={handleChange}
-        />{" "}
-        Smoking
-      </label>
-      <label>
-        <input
-          type="checkbox"
-          name="alcohol"
-          checked={formData.alcohol}
-          onChange={handleChange}
-        />{" "}
-        Alcohol
-      </label>
-      <input
-        type="number"
-        name="physicalActivity"
-        value={formData.physicalActivity}
-        onChange={handleChange}
-        placeholder="Physical Activity (hrs/week)"
-      />
-      <button onClick={handleSave}>Save</button>
-    </>
-  );
+  const filteredHistory = history
+    .filter((entry) =>
+      new Date(entry.timestamp).toLocaleDateString("en-GB").includes(searchTerm)
+    )
+    .sort((a, b) => {
+      return sortOrder === "asc"
+        ? new Date(a.timestamp) - new Date(b.timestamp)
+        : new Date(b.timestamp) - new Date(a.timestamp);
+    });
 
   return (
-    <div className="profile-container">
-      <h1>Profile</h1>
-      <div className="profile-info">
+    <div className="max-w-3xl mx-auto p-6 bg-white rounded-xl shadow mt-10">
+      <h1 className="text-3xl font-bold text-blue-700 mb-6 text-center">My Profile</h1>
+
+      <div className="space-y-4">
         {editable ? (
-          renderForm
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <input name="firstName" value={formData.firstName} onChange={handleChange} placeholder="First Name" className="input" />
+            <input name="lastName" value={formData.lastName} onChange={handleChange} placeholder="Last Name" className="input" />
+            <input name="email" value={formData.email} disabled className="input" />
+            <input name="uin" value={formData.uin} disabled className="input" />
+            <input name="birthdate" type="date" value={formData.birthdate} onChange={handleChange} className="input" />
+            <input name="height" value={formData.height} onChange={handleChange} placeholder="Height (cm)" className="input" />
+            <input name="weight" value={formData.weight} onChange={handleChange} placeholder="Weight (kg)" className="input" />
+            <select name="gender" value={formData.gender} onChange={handleChange} className="input">
+              <option value="">Select Gender</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+            </select>
+            <label className="flex items-center gap-2">
+              <input type="checkbox" name="smoking" checked={formData.smoking} onChange={handleChange} /> Smoking
+            </label>
+            <label className="flex items-center gap-2">
+              <input type="checkbox" name="alcohol" checked={formData.alcohol} onChange={handleChange} /> Alcohol
+            </label>
+            <input name="physicalActivity" value={formData.physicalActivity} onChange={handleChange} placeholder="Physical Activity (hrs/week)" className="input" />
+          </div>
         ) : (
-          <>
-            <p>
-              <strong>First Name:</strong> {formData.firstName}
-            </p>
-            <p>
-              <strong>Last Name:</strong> {formData.lastName}
-            </p>
-            <p>
-              <strong>Email:</strong> {formData.email}
-            </p>
-            <p>
-              <strong>UIN:</strong> {formData.uin}
-            </p>
-            <p>
-              <strong>Birthdate:</strong> {formatDateForDisplay(formData.birthdate)}
-            </p>
-            <p>
-              <strong>Height:</strong> {formData.height} cm
-            </p>
-            <p>
-              <strong>Weight:</strong> {formData.weight} kg
-            </p>
-            <p>
-              <strong>Gender:</strong> {formData.gender}
-            </p>
-            <p>
-              <strong>Smoking:</strong> {formData.smoking ? "Yes" : "No"}
-            </p>
-            <p>
-              <strong>Alcohol:</strong> {formData.alcohol ? "Yes" : "No"}
-            </p>
-            <p>
-              <strong>Physical Activity:</strong> {formData.physicalActivity} hrs/week
-            </p>
-            <button onClick={() => setEditable(true)}>Edit</button>
-          </>
+          <div className="space-y-1 text-gray-700">
+            <p><UserCircle2 className="inline w-5 h-5 mr-2" /> <strong>Name:</strong> {formData.firstName} {formData.lastName}</p>
+            <p><strong>Email:</strong> {formData.email}</p>
+            <p><strong>UIN:</strong> {formData.uin}</p>
+            <p><CalendarDays className="inline w-5 h-5 mr-2" /> <strong>Birthdate:</strong> {formData.birthdate}</p>
+            <p><strong>Gender:</strong> {formData.gender}</p>
+            <p><Ruler className="inline w-5 h-5 mr-2" /> <strong>Height:</strong> {formData.height} cm</p>
+            <p><Weight className="inline w-5 h-5 mr-2" /> <strong>Weight:</strong> {formData.weight} kg</p>
+            <p><Flame className="inline w-5 h-5 mr-2" /> <strong>Smoking:</strong> {formData.smoking ? "Yes" : "No"}</p>
+            <p><strong>Alcohol:</strong> {formData.alcohol ? "Yes" : "No"}</p>
+            <p><Activity className="inline w-5 h-5 mr-2" /> <strong>Physical Activity:</strong> {formData.physicalActivity} hrs/week</p>
+          </div>
         )}
       </div>
 
-      <div className="history-section">
-        <h2>Prediction History</h2>
-        {history.length > 0 ? (
-          <ul>
-            {history.map((item, index) => (
-              <li key={index}>
-<p>
-  <strong>Prediction:</strong>{" "}
-  <span style={{ color: getPredictionColor(item.prediction) }}>
-    {formatPrediction(item.prediction)}
-  </span>
-</p>
-
-                <p>
-                  <strong>Date:</strong>{" "}
-                  {new Date(item.timestamp).toLocaleString()}
-                </p>
-              </li>
-            ))}
-          </ul>
+      <div className="mt-4 text-center">
+        {editable ? (
+          <button onClick={handleSave} className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">Save</button>
         ) : (
-          <p>No prediction history available.</p>
+          <button onClick={() => setEditable(true)} className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Edit</button>
+        )}
+      </div>
+
+      <div className="mt-10">
+        <button
+          onClick={() => setShowHistory(!showHistory)}
+          className="flex items-center gap-2 text-blue-600 hover:underline mb-2"
+        >
+          {showHistory ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          {showHistory ? "Hide Prediction History" : "Show Prediction History"}
+        </button>
+
+        {showHistory && (
+          <div>
+            <div className="flex items-center gap-3 mb-4">
+              <Search className="w-4 h-4 text-gray-600" />
+              <input
+                type="text"
+                placeholder="Search by date (DD/MM/YYYY)"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="border px-3 py-2 rounded-md w-full"
+              />
+              <button
+                className="text-sm text-blue-600 underline"
+                onClick={() => setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"))}
+              >
+                Sort: {sortOrder === "asc" ? "Oldest" : "Newest"}
+              </button>
+            </div>
+            {filteredHistory.length === 0 ? (
+              <p className="text-gray-500">No predictions found.</p>
+            ) : (
+              <ul className="space-y-3">
+                {filteredHistory.map((entry, idx) => (
+                  <li key={idx} className="bg-slate-100 p-4 rounded-lg shadow-sm">
+                    <p>
+                      <HeartPulse className="inline w-5 h-5 mr-1 text-pink-600" /> <strong>Risk Score:</strong> <span className={`font-bold ${getColor(entry.prediction)}`}>{(entry.prediction * 100).toFixed(2)}%</span>
+                    </p>
+                    <p className="text-sm text-gray-600">Date: {new Date(entry.timestamp).toLocaleString()}</p>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         )}
       </div>
     </div>
