@@ -1,4 +1,5 @@
 const express = require("express");
+const User = require("../models/User"); 
 const {
   register,
   requestPasswordReset,
@@ -18,11 +19,8 @@ router.get("/check-auth", authMiddleware, checkAuth);
 
 router.put("/update", authMiddleware, async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user.userId; // ✅ userId not id
     const updatedData = req.body;
-    
-    // Ensure correct model import
-    const User = require("../models/User");
 
     const updatedUser = await User.findByIdAndUpdate(
       userId,
@@ -31,14 +29,16 @@ router.put("/update", authMiddleware, async (req, res) => {
     );
 
     if (!updatedUser) {
+      console.warn("Could not update user — ID invalid or user not found:", userId);
       return res.status(404).json({ message: "User not found" });
     }
-
+    
     res.json({ user: updatedUser, message: "Profile updated successfully" });
   } catch (error) {
     console.error("Error updating profile:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 });
+
 
 module.exports = router;

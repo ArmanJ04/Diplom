@@ -9,18 +9,27 @@ function Navbar() {
     <nav className="navbar">
       <Link to="/">Home</Link>
       {user ? (
-        <>
-          <Link to="/dashboard">Dashboard</Link>
-          <Link to="/prediction">Predict</Link>
-          <Link to="/profile">Profile</Link>
-          <button onClick={logout}>Logout</button>
-        </>
-      ) : (
-        <>
-          <Link to="/login">Login</Link>
-          <Link to="/signup">Sign Up</Link>
-        </>
-      )}
+  <>
+    {user.role === "doctor" ? (
+      <>
+        <Link to="/doctor/profile">Dashboard</Link>
+        <Link to="/doctor/clients">Browse Clients</Link>
+      </>
+    ) : (
+      <>
+        <Link to="/dashboard">Dashboard</Link>
+        <Link to="/prediction">Predict</Link>
+      </>
+    )}
+    <Link to="/profile">Profile</Link>
+    <button onClick={logout}>Logout</button>
+  </>
+) : (
+  <>
+    <Link to="/login">Login</Link>
+    <Link to="/signup">Sign Up</Link>
+  </>
+)}
     </nav>
   );
 }
