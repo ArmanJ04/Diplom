@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import toast from "react-hot-toast";
 
 function ConnectionRequests() {
   const [requests, setRequests] = useState([]);
@@ -12,23 +13,23 @@ function ConnectionRequests() {
       setRequests(res.data);
     } catch (err) {
       console.error("Failed to load connection requests", err);
+      toast.error("Failed to load connection requests");
     }
   };
 
- const handleRespond = async (requestId, action) => {
-  try {
-    await axios.post(
-      `http://localhost:5000/api/doctor/respond-request/${requestId}`,
-      { action },
-      { withCredentials: true }
-    );
-    fetchRequests(); // Refresh list after action
-  } catch (err) {
-    console.error("Failed to respond to request", err);
-    toast.error("Failed to respond to request");
-  }
-};
-
+  const handleRespond = async (requestId, action) => {
+    try {
+      await axios.post(
+        `http://localhost:5000/api/prediction/respond-request/${requestId}`,
+        { action },
+        { withCredentials: true }
+      );
+      fetchRequests(); // Refresh list after action
+    } catch (err) {
+      console.error("Failed to respond to request", err);
+      toast.error("Failed to respond to request");
+    }
+  };
 
   useEffect(() => {
     fetchRequests();

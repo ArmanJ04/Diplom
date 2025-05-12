@@ -46,21 +46,20 @@ exports.respondToConnectionRequest = async (req, res) => {
 
     if (action === 'accept') {
       // Update connection status
-      connectionRequest.status = 'approved_by_client';
+      connectionRequest.status = 'approved_by_client'; 
       await User.findByIdAndUpdate(patientId, { assignedDoctorId: connectionRequest.doctorId });
       await connectionRequest.save();
-      res.json({ message: "Connection request accepted successfully." });
-    } else if (action === 'reject') {
+      return res.json({ message: "Connection request accepted successfully." });
+    } else { // action === 'reject'
       connectionRequest.status = 'rejected_by_client';
       await connectionRequest.save();
-      res.json({ message: "Connection request rejected." });
+      return res.json({ message: "Connection request rejected." });
     }
   } catch (error) {
     console.error(`Error in respondToConnectionRequest for ID ${requestId}:`, error);
     res.status(500).json({ message: "Server error while responding to connection request." });
   }
 };
-
 
 exports.getPatients = async (req, res) => {
   try {
