@@ -205,12 +205,15 @@ const fetchHistory = async (uin) => {
             ) : (
               <ul className="space-y-3">
                 {filteredHistory.map((entry, idx) => (
+                  
                   <li key={idx} className="bg-slate-100 p-4 rounded-lg shadow-sm">
                     <p>
                       <HeartPulse className="inline w-5 h-5 mr-1 text-pink-600" /> <strong>Risk Score:</strong> <span className={`font-bold ${getColor(entry.prediction)}`}>{(entry.prediction * 100).toFixed(2)}%</span>
-                    </p>
+                    </p> 
                     <p className="text-sm text-gray-600">Date: {new Date(entry.timestamp).toLocaleString()}</p>
                     {entry.feedback && ( <p className="text-sm text-gray-600">   <strong>Doctor's Feedback:</strong> {entry.feedback} </p>
+
+)}                    {entry.status && ( <p className="text-sm text-gray-600">   <strong>Prediction status:</strong> {entry.status} </p>
 )}
                   </li>
                 ))}
