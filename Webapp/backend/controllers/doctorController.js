@@ -28,7 +28,6 @@ exports.respondToConnectionRequest = async (req, res) => {
   }
 
   try {
-    // Fetch the connection request
     const connectionRequest = await ConnectionRequest.findById(requestId);
 
     if (!connectionRequest) {
@@ -45,15 +44,14 @@ exports.respondToConnectionRequest = async (req, res) => {
     }
 
     if (action === 'accept') {
-      // Update connection status
-      connectionRequest.status = 'approved_by_client'; 
+      connectionRequest.status = 'client_accepted'; // Change status to 'client_accepted'
       await User.findByIdAndUpdate(patientId, { assignedDoctorId: connectionRequest.doctorId });
       await connectionRequest.save();
-      return res.json({ message: "Connection request accepted successfully." });
+      res.json({ message: "Connection request accepted successfully." });
     } else { // action === 'reject'
-      connectionRequest.status = 'rejected_by_client';
+      connectionRequest.status = 'client_rejected'; // Change status to 'client_rejected'
       await connectionRequest.save();
-      return res.json({ message: "Connection request rejected." });
+      res.json({ message: "Connection request rejected." });
     }
   } catch (error) {
     console.error(`Error in respondToConnectionRequest for ID ${requestId}:`, error);
@@ -91,7 +89,6 @@ exports.getPatientPredictions = async (req, res) => {
     res.status(500).json({ message: "Server error while fetching patient predictions." });
   }
 };
-
 exports.approvePrediction = async (req, res) => {
   const { predictionId } = req.params;
   try {

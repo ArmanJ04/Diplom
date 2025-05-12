@@ -7,29 +7,49 @@ router.use(authMiddleware);
 
 router.get("/pending-requests", doctorController.getPendingRequestsForClient);
 router.post("/respond-request/:requestId", doctorController.respondToConnectionRequest);
-// Save Prediction
+// Backend Router (Express.js)
 router.post("/save", async (req, res) => {
   try {
-    const { uin, prediction } = req.body;
-    console.log("Received prediction data:", uin, prediction); // Debugging log
+    let { uin, prediction } = req.body;
+    console.log("Received for /save:", { uin, prediction, predictionType: typeof prediction }); // Log what's received
 
-    if (!uin || prediction === undefined) {
-      console.error("Missing uin or prediction");
-      return res.status(400).json({ error: "UIN and prediction are required" });
+    if (!uin || typeof uin !== 'string' || uin.trim() === "") {
+      console.error("Invalid or missing UIN");
+      return res.status(400).json({ error: "Valid UIN is required" });
     }
 
-    const newPrediction = new Prediction({ uin, prediction, timestamp: new Date() });
-    await newPrediction.save();
+    if (prediction === undefined || prediction === null) {
+      console.error("Missing prediction value (undefined or null)");
+      return res.status(400).json({ error: "Prediction value is required" });
+    }
 
-    console.log("Prediction saved:", newPrediction); // Debugging log
-    res.json({ message: "Prediction saved successfully" });
+    const numericPrediction = parseFloat(prediction); // Attempt to parse
+
+    if (isNaN(numericPrediction)) {
+      console.error("Prediction is not a valid number:", prediction);
+      return res.status(400).json({ error: "Prediction must be a valid number." });
+    }
+
+    const newPredictionDoc = new Prediction({
+      uin,
+      prediction: numericPrediction, // Use the parsed and validated number
+      timestamp: new Date(),
+    });
+
+    await newPredictionDoc.save();
+    console.log("Prediction saved:", newPredictionDoc);
+    res.status(201).json({ message: "Prediction saved successfully", data: newPredictionDoc }); // Send 201 for successful creation
   } catch (error) {
-    console.error("Error saving prediction:", error);
-    res.status(500).json({ error: "Failed to save prediction" });
+    console.error("Error saving prediction:", error); // THIS IS THE KEY LOG
+    if (error.name === 'ValidationError') {
+      // Send back specific validation errors
+      return res.status(400).json({ error: "Validation failed", details: error.errors });
+    }
+    // For other errors, send a generic 500
+    res.status(500).json({ error: "Failed to save prediction", details: error.message });
   }
 });
 
-// Fetch Prediction History
 router.get("/history", async (req, res) => {
   try {
     const { uin } = req.query;
