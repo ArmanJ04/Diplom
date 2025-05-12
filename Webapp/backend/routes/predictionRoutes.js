@@ -1,7 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const Prediction = require("../models/Prediction");
+const doctorController = require("../controllers/doctorController");
+const authMiddleware = require("../middleware/authMiddleware");
+router.use(authMiddleware);
 
+router.get("/pending-requests", doctorController.getPendingRequestsForClient);
+router.post("/respond-request/:requestId", doctorController.respondToConnectionRequest);
 // Save Prediction
 router.post("/save", async (req, res) => {
   try {

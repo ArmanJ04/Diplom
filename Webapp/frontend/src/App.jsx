@@ -12,6 +12,7 @@ import Profile from "./pages/Profile";
 import PredictionList from "./components/PredictionList";
 import PasswordRecovery from "./pages/PasswordRecovery";
 import BrowseClients from "./pages/BrowseClients";
+import ConnectionRequests from "./pages/ConnectionRequests";
 import "./styles/styles.css";
 import DoctorProfile from "./pages/DoctorProfile"; // 👈 Add this line
 import { Toaster } from "react-hot-toast";
@@ -58,6 +59,7 @@ function App() {
             <Route path="/forgot-password" element={<PasswordRecovery />} />
             <Route path="/doctor/profile" element={<DoctorProfile />} />
             <Route path="/doctor/clients" element={<BrowseClients />} />
+            <Route path="/connection-requests" element={<ConnectionRequests />} />
             </Routes>
         </div>
       </div>

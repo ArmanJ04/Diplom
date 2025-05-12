@@ -49,7 +49,11 @@ exports.register = async (req, res) => {
     await newUser.save();
 
     // Generate JWT token for user
-    const token = jwt.sign({ id: newUser._id }, SECRET_KEY, { expiresIn: "1h" });
+const token = jwt.sign(
+  { userId: user._id, role: user.role },  // <-- role included here
+  SECRET_KEY,
+  { expiresIn: "1d" }
+);
 
     const { password: _, ...userDataSafe } = newUser._doc;
 
@@ -84,7 +88,11 @@ exports.login = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
 
-    const token = jwt.sign({ userId: user._id }, SECRET_KEY, { expiresIn: "1d" });
+const token = jwt.sign(
+  { userId: user._id, role: user.role },  // <-- role included here
+  SECRET_KEY,
+  { expiresIn: "1d" }
+);
 
     res.cookie("token", token, {
       httpOnly: true,

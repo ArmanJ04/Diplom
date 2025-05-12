@@ -19,9 +19,11 @@ function Navbar() {
       <>
         <Link to="/dashboard">Dashboard</Link>
         <Link to="/prediction">Predict</Link>
+        <Link to="/profile">Profile</Link>
+        <Link to="/connection-requests" className="text-blue-600 hover:underline">View Doctor Requests</Link>
+
       </>
     )}
-    <Link to="/profile">Profile</Link>
     <button onClick={logout}>Logout</button>
   </>
 ) : (

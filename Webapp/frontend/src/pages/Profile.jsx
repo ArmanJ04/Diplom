@@ -36,16 +36,55 @@ function Profile() {
     setFormData({ ...user, birthdate: formatDateForInput(user.birthdate) });
     fetchHistory(user.uin);
   }, [user, navigate]);
+// From the corrected Profile.jsx I sent you earlier - make sure this is in your Profile.jsx
 
-  const fetchHistory = async (uin) => {
-    try {
-      const res = await fetch(`http://localhost:5000/api/prediction/history?uin=${uin}`);
-      const data = await res.json();
-      setHistory(data.history || []);
-    } catch (err) {
-      console.error("Error loading history", err);
+const fetchHistory = async (uin) => {
+  // setHistoryError(null); // If you added a state for UI error display
+  const token = localStorage.getItem("token");
+
+  // VITAL CHECK: Is the token even there?
+  if (!token) {
+    const noTokenError = "Authentication token not found. Please log in again.";
+    // THIS LOG IS VERY IMPORTANT - DO YOU SEE IT IN YOUR BROWSER CONSOLE?
+    console.error("Profile.jsx - fetchHistory:", noTokenError);
+    // setHistoryError(noTokenError); // If you have UI error state
+    setHistory([]);
+    return; // Stop if no token
+  }
+
+  // Optional: Uncomment to see the token being used (first 30 chars)
+  // console.log("Profile.jsx - fetchHistory: Attempting to use token -", token.substring(0, 30) + "...");
+
+  try {
+    const response = await fetch(`http://localhost:5000/api/prediction/history?uin=${uin}`, {
+      method: 'GET',
+      headers: {
+        "Authorization": `Bearer ${token}`, // Token is explicitly added
+      },
+    });
+
+    if (!response.ok) {
+      let errorPayload = { message: `API Error: ${response.status} ${response.statusText}` };
+      try {
+        const errorData = await response.json();
+        if (errorData && errorData.message) {
+          errorPayload.message = errorData.message;
+        }
+      } catch (e) {
+        console.warn("Profile.jsx - fetchHistory: Could not parse error response as JSON.", e);
+      }
+      throw new Error(errorPayload.message);
     }
-  };
+
+    const data = await response.json();
+    setHistory(Array.isArray(data.history) ? data.history : []);
+  } catch (err) {
+    // This will log the more specific error message from the 'throw new Error' above
+    console.error("Profile.jsx - Error loading history:", err.message);
+    // setHistoryError(err.message); // If you have UI error state
+    setHistory([]);
+  }
+};
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -181,6 +220,11 @@ function Profile() {
                       <HeartPulse className="inline w-5 h-5 mr-1 text-pink-600" /> <strong>Risk Score:</strong> <span className={`font-bold ${getColor(entry.prediction)}`}>{(entry.prediction * 100).toFixed(2)}%</span>
                     </p>
                     <p className="text-sm text-gray-600">Date: {new Date(entry.timestamp).toLocaleString()}</p>
+                    {entry.feedback && (
+  <p className="text-sm text-gray-600">
+    <strong>Doctor's Feedback:</strong> {entry.feedback}
+  </p>
+)}
                   </li>
                 ))}
               </ul>

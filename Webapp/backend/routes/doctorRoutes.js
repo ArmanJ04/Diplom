@@ -5,18 +5,17 @@ const authMiddleware = require("../middleware/authMiddleware");
 const checkRole = require("../middleware/roleMiddleware");
 
 router.use(authMiddleware);
-router.use(checkRole(['doctor'])); // All routes here are for doctors
+router.use(checkRole(['doctor'])); // Ensure only doctors can access these routes
 
-// --- Existing Routes for Assigned Patients ---
-router.get("/patients", doctorController.getAssignedPatients); // Gets currently assigned patients
-router.get("/patients/:uin/predictions", doctorController.getPatientPredictionsByUin);
-router.put("/patients/:uin/predictions/:predictionId/validate", doctorController.validatePrediction);
-router.put("/patients/:uin/predictions/:predictionId/reject", doctorController.rejectPrediction);
+router.get("/patients", doctorController.getPatients); 
+router.get("/patients/:uin/predictions", doctorController.getPatientPredictions);
+router.put("/patients/:uin/predictions/:predictionId/validate", doctorController.approvePrediction);
+router.put("/patients/:uin/predictions/:predictionId/reject", doctorController.cancelPrediction);
 router.post("/patients/:uin/predictions/:predictionId/feedback", doctorController.addPredictionFeedback);
 
-// --- New Routes for Discovering Clients and Connection Requests by Doctor ---
-router.get("/browse-clients", doctorController.browseAllClients); // New: Doctor browses all clients
-router.post("/request-connection/:clientId", doctorController.requestConnectionToClient); // New: Doctor requests connection
-router.get("/connection-requests/sent", doctorController.getSentConnectionRequests); // New: Doctor views their sent requests
+router.get("/browse-clients", doctorController.browseAllClients);
+router.post("/request-connection/:clientId", doctorController.requestConnection);
+router.get("/connection-requests/sent", doctorController.getSentConnectionRequests);
+router.post("/respond-request/:requestId", doctorController.respondToConnectionRequest);
 
 module.exports = router;

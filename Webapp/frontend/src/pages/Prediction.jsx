@@ -49,9 +49,11 @@ const Prediction = () => {
     return Math.floor(ageInMilliseconds / (1000 * 60 * 60 * 24));
   };
 
-  const handleSubmit = async () => {
+ const handleSubmit = async () => {
     setLoading(true);
     setResult(null);
+    const token = localStorage.getItem("token"); // Get token
+
     try {
       const ageInDays = calculateAgeInDays(inputData.birthdate);
 
@@ -73,20 +75,38 @@ const Prediction = () => {
 
       const response = await fetch("http://localhost:5000/api/ai/predict", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { "Authorization": `Bearer ${token}` }), // Add Authorization header
+        },
         body: JSON.stringify(formattedData),
       });
+
+      if (!response.ok) { // Check if prediction call was successful
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Prediction API Error: ${response.status}`);
+      }
       const data = await response.json();
 
-      await fetch("http://localhost:5000/api/prediction/save", {
+      const saveResponse = await fetch("http://localhost:5000/api/prediction/save", { // Renamed to avoid conflict
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { "Authorization": `Bearer ${token}` }), // Add Authorization header
+        },
         body: JSON.stringify({ uin: user.uin, prediction: data.prediction }),
       });
+
+      if (!saveResponse.ok) { // Check if save call was successful
+        const errorData = await saveResponse.json();
+        throw new Error(errorData.message || `Save Prediction API Error: ${saveResponse.status}`);
+      }
 
       setResult(data);
     } catch (error) {
       console.error("Error:", error);
+      // Display error to user if needed
+      setResult({ error: error.message }); // Example of setting an error in the result
     } finally {
       setLoading(false);
     }

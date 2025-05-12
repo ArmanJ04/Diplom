@@ -12,10 +12,14 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
 
-  // For doctor accounts
-  doctorApproved: { type: Boolean, default: false },
+  doctorApproved: {
+    type: Boolean,
+    default: false,
+    required: function () {
+      return this.role === "doctor";
+    },
+  },
 
-  // For patients only
   birthdate: Date,
   gender: String,
   height: Number,
@@ -26,7 +30,6 @@ const userSchema = new mongoose.Schema({
   alcohol: Boolean,
   physicalActivity: String,
 
-  // Assigned doctor reference
   assignedDoctorId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",

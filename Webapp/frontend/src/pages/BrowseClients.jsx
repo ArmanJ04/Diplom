@@ -13,9 +13,9 @@ function BrowseClients() {
         const res = await axios.get("http://localhost:5000/api/doctor/browse-clients", {
           withCredentials: true,
         });
-        setClients(res.data);
-      } catch (err) {
-        console.error("Error fetching clients:", err);
+        setClients(Array.isArray(res.data) ? res.data : []);
+      } catch {
+        setClients([]);
       }
     };
 
@@ -24,10 +24,9 @@ function BrowseClients() {
         const res = await axios.get("http://localhost:5000/api/doctor/connection-requests/sent", {
           withCredentials: true,
         });
-        const sentClientIds = res.data.map((req) => req.clientId);
-        setSentRequests(sentClientIds);
-      } catch (err) {
-        console.error("Error fetching sent requests:", err);
+        setSentRequests(Array.isArray(res.data) ? res.data.map((r) => r.clientId) : []);
+      } catch {
+        setSentRequests([]);
       }
     };
 
@@ -37,9 +36,11 @@ function BrowseClients() {
 
   const handleConnect = async (clientId) => {
     try {
-      await axios.post(`http://localhost:5000/api/doctor/request-connection/${clientId}`, {}, {
-        withCredentials: true,
-      });
+      await axios.post(
+        `http://localhost:5000/api/doctor/request-connection/${clientId}`,
+        {},
+        { withCredentials: true }
+      );
       setSentRequests((prev) => [...prev, clientId]);
     } catch (err) {
       console.error("Connection request failed:", err);
@@ -67,9 +68,14 @@ function BrowseClients() {
       ) : (
         <ul className="space-y-4">
           {filteredClients.map((client) => (
-            <li key={client._id} className="p-4 border rounded-md shadow-sm bg-white flex justify-between items-center">
+            <li
+              key={client._id}
+              className="p-4 border rounded-md shadow-sm bg-white flex justify-between items-center"
+            >
               <div>
-                <p className="font-semibold text-gray-800">{client.firstName} {client.lastName}</p>
+                <p className="font-semibold text-gray-800">
+                  {client.firstName} {client.lastName}
+                </p>
                 <p className="text-sm text-gray-500">UIN: {client.uin}</p>
                 <p className="text-sm text-gray-500">Email: {client.email}</p>
               </div>
