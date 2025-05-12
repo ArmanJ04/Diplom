@@ -48,69 +48,75 @@ const Prediction = () => {
     const ageInMilliseconds = currentDate - birthDate;
     return Math.floor(ageInMilliseconds / (1000 * 60 * 60 * 24));
   };
+const handleSubmit = async () => {
+  setLoading(true);
+  setResult(null);
+  const token = localStorage.getItem("token"); // Get token from localStorage
 
- const handleSubmit = async () => {
-    setLoading(true);
-    setResult(null);
-    const token = localStorage.getItem("token"); // Get token
+  if (!token) {
+    toast.error("Authentication token not found. Please log in again.");
+    setLoading(false);
+    return;
+  }
 
-    try {
-      const ageInDays = calculateAgeInDays(inputData.birthdate);
+  try {
+    const ageInDays = calculateAgeInDays(inputData.birthdate);
+    const formattedData = {
+      features: [
+        ageInDays,
+        inputData.gender === "male" ? 1 : 0,
+        parseFloat(inputData.height),
+        parseFloat(inputData.weight),
+        parseInt(inputData.systolicBP),
+        parseInt(inputData.diastolicBP),
+        parseInt(inputData.cholesterol),
+        parseInt(inputData.glucose),
+        inputData.smoking ? 1 : 0,
+        inputData.alcoholIntake ? 1 : 0,
+        inputData.physicalActivity ? 1 : 0,
+      ],
+    };
 
-      const formattedData = {
-        features: [
-          ageInDays,
-          inputData.gender === "male" ? 1 : 0,
-          parseFloat(inputData.height),
-          parseFloat(inputData.weight),
-          parseInt(inputData.systolicBP),
-          parseInt(inputData.diastolicBP),
-          parseInt(inputData.cholesterol),
-          parseInt(inputData.glucose),
-          inputData.smoking ? 1 : 0,
-          inputData.alcoholIntake ? 1 : 0,
-          inputData.physicalActivity ? 1 : 0,
-        ],
-      };
+    const response = await fetch("http://localhost:5000/api/ai/predict", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, // Add token to Authorization header
+      },
+      body: JSON.stringify(formattedData),
+    });
 
-      const response = await fetch("http://localhost:5000/api/ai/predict", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token && { "Authorization": `Bearer ${token}` }), // Add Authorization header
-        },
-        body: JSON.stringify(formattedData),
-      });
-
-      if (!response.ok) { // Check if prediction call was successful
-        const errorData = await response.json();
-        throw new Error(errorData.message || `Prediction API Error: ${response.status}`);
-      }
-      const data = await response.json();
-
-      const saveResponse = await fetch("http://localhost:5000/api/prediction/save", { // Renamed to avoid conflict
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token && { "Authorization": `Bearer ${token}` }), // Add Authorization header
-        },
-        body: JSON.stringify({ uin: user.uin, prediction: data.prediction }),
-      });
-
-      if (!saveResponse.ok) { // Check if save call was successful
-        const errorData = await saveResponse.json();
-        throw new Error(errorData.message || `Save Prediction API Error: ${saveResponse.status}`);
-      }
-
-      setResult(data);
-    } catch (error) {
-      console.error("Error:", error);
-      // Display error to user if needed
-      setResult({ error: error.message }); // Example of setting an error in the result
-    } finally {
-      setLoading(false);
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || `Prediction API Error: ${response.status}`);
     }
-  };
+    const data = await response.json();
+
+    // Save the prediction to the database
+    const saveResponse = await fetch("http://localhost:5000/api/prediction/save", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ uin: user.uin, prediction: data.prediction }),
+    });
+
+    if (!saveResponse.ok) {
+      const errorData = await saveResponse.json();
+      throw new Error(errorData.message || `Save Prediction API Error: ${saveResponse.status}`);
+    }
+
+    setResult(data);
+  } catch (error) {
+    console.error("Error:", error);
+    setResult({ error: error.message });
+  } finally {
+    setLoading(false);
+  }
+};
+
+
 
   const formatDateForInput = (date) => {
     const d = new Date(date);

@@ -36,24 +36,14 @@ function Profile() {
     setFormData({ ...user, birthdate: formatDateForInput(user.birthdate) });
     fetchHistory(user.uin);
   }, [user, navigate]);
-// From the corrected Profile.jsx I sent you earlier - make sure this is in your Profile.jsx
-
 const fetchHistory = async (uin) => {
-  // setHistoryError(null); // If you added a state for UI error display
   const token = localStorage.getItem("token");
-
-  // VITAL CHECK: Is the token even there?
   if (!token) {
     const noTokenError = "Authentication token not found. Please log in again.";
-    // THIS LOG IS VERY IMPORTANT - DO YOU SEE IT IN YOUR BROWSER CONSOLE?
     console.error("Profile.jsx - fetchHistory:", noTokenError);
-    // setHistoryError(noTokenError); // If you have UI error state
     setHistory([]);
     return; // Stop if no token
   }
-
-  // Optional: Uncomment to see the token being used (first 30 chars)
-  // console.log("Profile.jsx - fetchHistory: Attempting to use token -", token.substring(0, 30) + "...");
 
   try {
     const response = await fetch(`http://localhost:5000/api/prediction/history?uin=${uin}`, {
@@ -220,10 +210,7 @@ const fetchHistory = async (uin) => {
                       <HeartPulse className="inline w-5 h-5 mr-1 text-pink-600" /> <strong>Risk Score:</strong> <span className={`font-bold ${getColor(entry.prediction)}`}>{(entry.prediction * 100).toFixed(2)}%</span>
                     </p>
                     <p className="text-sm text-gray-600">Date: {new Date(entry.timestamp).toLocaleString()}</p>
-                    {entry.feedback && (
-  <p className="text-sm text-gray-600">
-    <strong>Doctor's Feedback:</strong> {entry.feedback}
-  </p>
+                    {entry.feedback && ( <p className="text-sm text-gray-600">   <strong>Doctor's Feedback:</strong> {entry.feedback} </p>
 )}
                   </li>
                 ))}

@@ -75,41 +75,37 @@ function DoctorProfile() {
     }
   };
 
-  const handleApprove = async (predictionId) => {
-    if (!selectedPatient) return;
-    try {
-      await axios.put(
-        `http://localhost:5000/api/doctor/patients/${selectedPatient}/predictions/${predictionId}/validate`
-      );
-      setPredictions((prev) =>
-        prev.map((p) =>
-          p._id === predictionId ? { ...p, status: "approved" } : p
-        )
-      );
-      toast.success("Prediction approved.");
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Approve failed.");
-      console.error("Approve failed:", err.response || err.message);
-    }
-  };
+ const handleApprove = async (predictionId) => {
+  try {
+    await axios.put(
+      `http://localhost:5000/api/doctor/patients/${selectedPatient}/predictions/${predictionId}/validate`
+    );
+    setPredictions((prev) =>
+      prev.map((p) =>
+        p._id === predictionId ? { ...p, status: "approved" } : p
+      )
+    );
+    toast.success("Prediction approved.");
+  } catch (err) {
+    toast.error(err.response?.data?.message || "Approve failed.");
+  }
+};
 
-  const handleReject = async (predictionId) => {
-    if (!selectedPatient) return;
-    try {
-      await axios.put(
-        `http://localhost:5000/api/doctor/patients/${selectedPatient}/predictions/${predictionId}/reject`
-      );
-      setPredictions((prev) =>
-        prev.map((p) =>
-          p._id === predictionId ? { ...p, status: "canceled" } : p
-        )
-      );
-      toast.success("Prediction rejected.");
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Cancel failed.");
-      console.error("Cancel failed:", err.response || err.message);
-    }
-  };
+const handleReject = async (predictionId) => {
+  try {
+    await axios.put(
+      `http://localhost:5000/api/doctor/patients/${selectedPatient}/predictions/${predictionId}/reject`
+    );
+    setPredictions((prev) =>
+      prev.map((p) =>
+        p._id === predictionId ? { ...p, status: "canceled" } : p
+      )
+    );
+    toast.success("Prediction rejected.");
+  } catch (err) {
+    toast.error(err.response?.data?.message || "Cancel failed.");
+  }
+};
 
   const handleSendFeedback = async (predictionId) => {
     if (!selectedPatient || !feedbackMap[predictionId]) {
