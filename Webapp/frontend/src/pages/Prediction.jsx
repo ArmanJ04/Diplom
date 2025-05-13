@@ -51,16 +51,11 @@ const Prediction = () => {
 const handleSubmit = async () => {
   setLoading(true);
   setResult(null);
-  const token = localStorage.getItem("token"); // Get token from localStorage
-
-  if (!token) {
-    toast.error("Authentication token not found. Please log in again.");
-    setLoading(false);
-    return;
-  }
+  const token = localStorage.getItem("token"); // Get token
 
   try {
     const ageInDays = calculateAgeInDays(inputData.birthdate);
+
     const formattedData = {
       features: [
         ageInDays,
@@ -75,13 +70,23 @@ const handleSubmit = async () => {
         inputData.alcoholIntake ? 1 : 0,
         inputData.physicalActivity ? 1 : 0,
       ],
+      medicalInputs: {
+        systolicBP: inputData.systolicBP,
+        diastolicBP: inputData.diastolicBP,
+        cholesterol: inputData.cholesterol,
+        glucose: inputData.glucose,
+        smoking: inputData.smoking,
+        alcoholIntake: inputData.alcoholIntake,
+        physicalActivity: inputData.physicalActivity,
+      },
     };
 
+    // Send prediction to backend
     const response = await fetch("http://localhost:5000/api/ai/predict", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`, // Add token to Authorization header
+        ...(token && { "Authorization": `Bearer ${token}` }), // Add Authorization header
       },
       body: JSON.stringify(formattedData),
     });
@@ -90,16 +95,21 @@ const handleSubmit = async () => {
       const errorData = await response.json();
       throw new Error(errorData.message || `Prediction API Error: ${response.status}`);
     }
+
     const data = await response.json();
 
-    // Save the prediction to the database
+    // Save prediction data to DB
     const saveResponse = await fetch("http://localhost:5000/api/prediction/save", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+        ...(token && { "Authorization": `Bearer ${token}` }),
       },
-      body: JSON.stringify({ uin: user.uin, prediction: data.prediction }),
+      body: JSON.stringify({
+        uin: user.uin,
+        prediction: data.prediction,
+        medicalInputs: formattedData.medicalInputs, // Send medical inputs here
+      }),
     });
 
     if (!saveResponse.ok) {
@@ -115,8 +125,6 @@ const handleSubmit = async () => {
     setLoading(false);
   }
 };
-
-
 
   const formatDateForInput = (date) => {
     const d = new Date(date);

@@ -7,12 +7,14 @@ router.use(authMiddleware);
 
 router.get("/pending-requests", doctorController.getPendingRequestsForClient);
 router.post("/respond-request/:requestId", doctorController.respondToConnectionRequest);
-// Backend Router (Express.js)
+// Save Prediction Route
 router.post("/save", async (req, res) => {
   try {
-    let { uin, prediction } = req.body;
-    console.log("Received for /save:", { uin, prediction, predictionType: typeof prediction }); // Log what's received
+    let { uin, prediction, medicalInputs } = req.body;
 
+    console.log("Received for /save:", { uin, prediction, medicalInputs }); // Log received data for debugging
+
+    // Validation
     if (!uin || typeof uin !== 'string' || uin.trim() === "") {
       console.error("Invalid or missing UIN");
       return res.status(400).json({ error: "Valid UIN is required" });
@@ -23,29 +25,28 @@ router.post("/save", async (req, res) => {
       return res.status(400).json({ error: "Prediction value is required" });
     }
 
-    const numericPrediction = parseFloat(prediction); // Attempt to parse
-
+    const numericPrediction = parseFloat(prediction);
     if (isNaN(numericPrediction)) {
       console.error("Prediction is not a valid number:", prediction);
       return res.status(400).json({ error: "Prediction must be a valid number." });
     }
 
+    // Log medicalInputs to check if it's coming properly
+    console.log("Medical Inputs:", medicalInputs);  // Log to see if medical inputs are included
+
+    // Create new Prediction document
     const newPredictionDoc = new Prediction({
       uin,
-      prediction: numericPrediction, // Use the parsed and validated number
+      prediction: numericPrediction,
+      medicalInputs: medicalInputs,  // Store medical inputs here
       timestamp: new Date(),
     });
 
-    await newPredictionDoc.save();
-    console.log("Prediction saved:", newPredictionDoc);
-    res.status(201).json({ message: "Prediction saved successfully", data: newPredictionDoc }); // Send 201 for successful creation
+    await newPredictionDoc.save(); // Save to DB
+    console.log("Prediction saved:", newPredictionDoc); // Log to confirm
+    res.status(201).json({ message: "Prediction saved successfully", data: newPredictionDoc });
   } catch (error) {
-    console.error("Error saving prediction:", error); // THIS IS THE KEY LOG
-    if (error.name === 'ValidationError') {
-      // Send back specific validation errors
-      return res.status(400).json({ error: "Validation failed", details: error.errors });
-    }
-    // For other errors, send a generic 500
+    console.error("Error saving prediction:", error);
     res.status(500).json({ error: "Failed to save prediction", details: error.message });
   }
 });

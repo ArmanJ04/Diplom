@@ -1,4 +1,3 @@
-// Enhanced Profile.jsx with Working Update, Toggleable History, Search and Sort
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -36,45 +35,44 @@ function Profile() {
     setFormData({ ...user, birthdate: formatDateForInput(user.birthdate) });
     fetchHistory(user.uin);
   }, [user, navigate]);
-const fetchHistory = async (uin) => {
-  const token = localStorage.getItem("token");
-  if (!token) {
-    const noTokenError = "Authentication token not found. Please log in again.";
-    console.error("Profile.jsx - fetchHistory:", noTokenError);
-    setHistory([]);
-    return; // Stop if no token
-  }
 
-  try {
-    const response = await fetch(`http://localhost:5000/api/prediction/history?uin=${uin}`, {
-      method: 'GET',
-      headers: {
-        "Authorization": `Bearer ${token}`, // Token is explicitly added
-      },
-    });
-
-    if (!response.ok) {
-      let errorPayload = { message: `API Error: ${response.status} ${response.statusText}` };
-      try {
-        const errorData = await response.json();
-        if (errorData && errorData.message) {
-          errorPayload.message = errorData.message;
-        }
-      } catch (e) {
-        console.warn("Profile.jsx - fetchHistory: Could not parse error response as JSON.", e);
-      }
-      throw new Error(errorPayload.message);
+  const fetchHistory = async (uin) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      const noTokenError = "Authentication token not found. Please log in again.";
+      console.error("Profile.jsx - fetchHistory:", noTokenError);
+      setHistory([]);
+      return;
     }
 
-    const data = await response.json();
-    setHistory(Array.isArray(data.history) ? data.history : []);
-  } catch (err) {
-    // This will log the more specific error message from the 'throw new Error' above
-    console.error("Profile.jsx - Error loading history:", err.message);
-    // setHistoryError(err.message); // If you have UI error state
-    setHistory([]);
-  }
-};
+    try {
+      const response = await fetch(`http://localhost:5000/api/prediction/history?uin=${uin}`, {
+        method: 'GET',
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        let errorPayload = { message: `API Error: ${response.status} ${response.statusText}` };
+        try {
+          const errorData = await response.json();
+          if (errorData && errorData.message) {
+            errorPayload.message = errorData.message;
+          }
+        } catch (e) {
+          console.warn("Profile.jsx - fetchHistory: Could not parse error response as JSON.", e);
+        }
+        throw new Error(errorPayload.message);
+      }
+
+      const data = await response.json();
+      setHistory(Array.isArray(data.history) ? data.history : []);
+    } catch (err) {
+      console.error("Profile.jsx - Error loading history:", err.message);
+      setHistory([]);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -84,13 +82,12 @@ const fetchHistory = async (uin) => {
   const handleSave = async () => {
     const updated = { ...formData, birthdate: formatDateForInput(formData.birthdate) };
     const updatedUser = await updateUser(updated);
-  
+
     if (!updatedUser) {
       alert("Failed to update profile. Please try again.");
       return;
     }
-    
-  
+
     setFormData({
       ...updatedUser,
       birthdate: formatDateForInput(updatedUser.birthdate),
@@ -98,7 +95,6 @@ const fetchHistory = async (uin) => {
     setEditable(false);
     localStorage.setItem("user", JSON.stringify(updatedUser));
   };
-  
 
   const formatDateForInput = (date) => {
     if (!date) return "";
@@ -205,16 +201,31 @@ const fetchHistory = async (uin) => {
             ) : (
               <ul className="space-y-3">
                 {filteredHistory.map((entry, idx) => (
-                  
                   <li key={idx} className="bg-slate-100 p-4 rounded-lg shadow-sm">
                     <p>
                       <HeartPulse className="inline w-5 h-5 mr-1 text-pink-600" /> <strong>Risk Score:</strong> <span className={`font-bold ${getColor(entry.prediction)}`}>{(entry.prediction * 100).toFixed(2)}%</span>
                     </p> 
                     <p className="text-sm text-gray-600">Date: {new Date(entry.timestamp).toLocaleString()}</p>
-                    {entry.feedback && ( <p className="text-sm text-gray-600">   <strong>Doctor's Feedback:</strong> {entry.feedback} </p>
-
-)}                    {entry.status && ( <p className="text-sm text-gray-600">   <strong>Prediction status:</strong> {entry.status} </p>
-)}
+                    {entry.feedback && ( 
+                      <p className="text-sm text-gray-600">
+                        <strong>Doctor's Feedback:</strong> {entry.feedback}
+                      </p>
+                    )}
+                    {entry.status && ( 
+                      <p className="text-sm text-gray-600">
+                        <strong>Prediction Status:</strong> {entry.status}
+                      </p>
+                    )}
+                    <p className="text-sm text-gray-600">
+                      <strong>Medical Inputs:</strong>
+                    </p>
+                    <ul className="text-sm text-gray-600">
+                      {Object.entries(entry.medicalInputs || {}).map(([key, value], idx) => (
+                        <li key={idx}>
+                          <strong>{key}:</strong> {value}
+                        </li>
+                      ))}
+                    </ul>
                   </li>
                 ))}
               </ul>
