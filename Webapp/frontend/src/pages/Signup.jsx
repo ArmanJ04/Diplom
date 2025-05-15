@@ -2,6 +2,7 @@ import { useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import { UserPlus } from "lucide-react";
+import toast from "react-hot-toast";
 
 function Signup() {
   const { signup } = useContext(AuthContext);
@@ -28,15 +29,15 @@ function Signup() {
       return;
     }
     if (formData.password.length < 8) {
-      alert("Password must be at least 8 characters long.");
+      toast.error("Password must be at least 8 characters long.");
       return;
     }
     const result = await signup(formData);
     if (result.status === "success") {
-      alert("Signup successful!");
+      toast.success("Signup successful!");
       navigate("/profile");
     } else {
-      alert("Signup failed: " + result.message);
+      toast.error("Signup failed: " + result.message);
     }
   };
 

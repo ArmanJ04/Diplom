@@ -45,6 +45,7 @@ app.use("/api/ai", aiRoutes);
 app.use("/api/prediction", predictionRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/doctor", doctorRoutes);
+app.use("/api", doctorRoutes); // Correct
 
 
 app.listen(PORT, () => {

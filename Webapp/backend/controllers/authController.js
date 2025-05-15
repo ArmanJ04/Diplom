@@ -13,6 +13,40 @@ const transporter = nodemailer.createTransport({
     pass: process.env.EMAIL_PASS   // Your email password or app-specific password
   }
 });
+exports.updateUser = async (req, res) => {
+  try {
+    const userId = req.userId; // from auth middleware
+    const updateData = req.body;
+
+    // Fetch current user document
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Merge updateData over existing user data for completeness check
+    const mergedData = { ...user.toObject(), ...updateData };
+
+    // Required fields for completeness
+    const requiredFields = ["firstName", "lastName", "birthdate", "height", "weight", "gender"];
+
+    const profileComplete = requiredFields.every(field => {
+      const val = mergedData[field];
+      return val !== undefined && val !== null && val !== "";
+    });
+
+    // Add profileCompleted flag to updateData so it's saved
+    updateData.profileCompleted = profileComplete;
+
+    // Perform update
+    const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true }).select("-password");
+
+    res.json({ user: updatedUser });
+  } catch (error) {
+    console.error("Update user error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
 exports.register = async (req, res) => {
   try {
     const { role, firstName, lastName, uin, email, password } = req.body;
@@ -38,17 +72,17 @@ exports.register = async (req, res) => {
       lastName,
       uin,
       email,
-      password: hashedPassword
+      password: hashedPassword,
+      profileCompleted: role === "patient" ? false : true,  // patient profile incomplete on register
     };
 
     if (role === "doctor") {
-      userData.doctorApproved = false;  // Doctor needs to be approved by admin
+      userData.doctorApproved = false;  // doctor needs approval
     }
 
     const newUser = new User(userData);
     await newUser.save();
 
-    // Generate JWT token for user using newUser
     const token = jwt.sign(
       { userId: newUser._id, role: newUser.role },
       SECRET_KEY,
@@ -73,6 +107,7 @@ exports.register = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
 
 exports.login = async (req, res) => {
   const { uin, password } = req.body;
