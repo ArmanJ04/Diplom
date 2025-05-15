@@ -1,18 +1,16 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { EmptyRequests } from "../components/illustrations/EmptyRequests";
 
 function ConnectionRequests() {
   const [requests, setRequests] = useState([]);
 
   const fetchRequests = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/prediction/pending-requests", {
-        withCredentials: true,
-      });
+      const res = await axios.get("http://localhost:5000/api/prediction/pending-requests", { withCredentials: true });
       setRequests(res.data);
-    } catch (err) {
-      console.error("Failed to load connection requests", err);
+    } catch {
       toast.error("Failed to load connection requests");
     }
   };
@@ -24,9 +22,8 @@ function ConnectionRequests() {
         { action },
         { withCredentials: true }
       );
-      fetchRequests(); // Refresh list after action
-    } catch (err) {
-      console.error("Failed to respond to request", err);
+      fetchRequests();
+    } catch {
       toast.error("Failed to respond to request");
     }
   };
@@ -36,26 +33,28 @@ function ConnectionRequests() {
   }, []);
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      <h1 className="text-2xl font-bold text-blue-700 mb-4">Doctor Connection Requests</h1>
+    <div className="page-container">
+      <h1 className="text-2xl font-bold text-blue-700 mb-6">Doctor Connection Requests</h1>
       {requests.length === 0 ? (
-        <p>No connection requests at the moment.</p>
-      ) : (
-        <ul className="space-y-4">
-          {requests.map((req) => (
-            <li key={req._id} className="bg-white border p-4 rounded-md shadow-sm">
+ <>
+    <EmptyRequests />
+    <p className="text-center text-gray-500">No connection requests at the moment.</p>
+  </>      ) : (
+        <ul className="space-y-6">
+          {requests.map(req => (
+            <li key={req._id} className="bg-white border p-6 rounded-lg shadow">
               <p><strong>Doctor:</strong> {req.doctorId.firstName} {req.doctorId.lastName}</p>
               <p><strong>Email:</strong> {req.doctorId.email}</p>
-              <div className="mt-2 flex gap-2">
+              <div className="mt-4 flex gap-4">
                 <button
                   onClick={() => handleRespond(req._id, "accept")}
-                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-1 rounded-md"
+                  className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded"
                 >
                   Accept
                 </button>
                 <button
                   onClick={() => handleRespond(req._id, "reject")}
-                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-1 rounded-md"
+                  className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded"
                 >
                   Reject
                 </button>

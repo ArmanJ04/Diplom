@@ -1,4 +1,3 @@
-// Redesigned Signup.jsx (Clear and Accessible Healthcare Registration)
 import { useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
@@ -42,12 +41,20 @@ function Signup() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center bg-blue-50 px-6">
-      <div className="w-full max-w-md bg-white p-6 rounded-xl shadow-md">
-        <h2 className="text-2xl font-semibold text-center text-blue-700 mb-6">Create Your CardioCare Account</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <select name="role" value={formData.role} onChange={handleChange} required className="input">
-            <option value="">Select Role</option>
+    <div className="page-background" style={{ minHeight: "100vh", padding: "20px" }}>
+      <div className="page-centered">
+        <h2>Create Your CardioCare Account</h2>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <select
+            name="role"
+            value={formData.role}
+            onChange={handleChange}
+            required
+            style={{ color: formData.role ? "inherit" : "var(--color-text-secondary)" }}
+          >
+            <option value="" disabled>
+              Select Role
+            </option>
             <option value="patient">Patient</option>
             <option value="doctor">Doctor</option>
           </select>
@@ -58,7 +65,6 @@ function Signup() {
             value={formData.firstName}
             onChange={handleChange}
             required
-            className="input"
           />
           <input
             type="text"
@@ -67,7 +73,6 @@ function Signup() {
             value={formData.lastName}
             onChange={handleChange}
             required
-            className="input"
           />
           <input
             type="text"
@@ -76,7 +81,6 @@ function Signup() {
             value={formData.uin}
             onChange={handleChange}
             required
-            className="input"
           />
           <input
             type="email"
@@ -85,7 +89,6 @@ function Signup() {
             value={formData.email}
             onChange={handleChange}
             required
-            className="input"
           />
           <input
             type="password"
@@ -94,15 +97,15 @@ function Signup() {
             value={formData.password}
             onChange={handleChange}
             required
-            className="input"
           />
-          <button type="submit" className="w-full py-2 bg-blue-600 text-white rounded-md flex justify-center items-center gap-2 hover:bg-blue-700">
-            <UserPlus className="w-4 h-4" /> Sign Up
+          <button type="submit" className="btn-icon">
+            <UserPlus className="w-6 h-6" />
+            Sign Up
           </button>
         </form>
-        <div className="mt-4 text-center text-sm text-gray-600">
+        <div className="small-text mt-8">
           <p>
-            Already have an account? <Link to="/login" className="text-blue-600 hover:underline">Log in here</Link>
+            Already have an account? <Link to="/login">Log in here</Link>
           </p>
         </div>
       </div>
