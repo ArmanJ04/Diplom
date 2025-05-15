@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
+import toast from "react-hot-toast";
 
 export const AuthContext = createContext();
 
@@ -24,12 +25,11 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  // Axios Interceptor to include token in requests
   axios.interceptors.request.use(
     (config) => {
-      const token = localStorage.getItem("token"); // Fetch token from localStorage
+      const token = localStorage.getItem("token");
       if (token) {
-        config.headers["Authorization"] = `Bearer ${token}`; // Add token to headers
+        config.headers["Authorization"] = `Bearer ${token}`;
       }
       return config;
     },
@@ -43,7 +43,7 @@ export const AuthProvider = ({ children }) => {
       });
       setUser(res.data.user);
       localStorage.setItem("user", JSON.stringify(res.data.user));
-    } catch (error) {
+    } catch {
       setUser(null);
       localStorage.removeItem("user");
     } finally {
@@ -63,29 +63,23 @@ export const AuthProvider = ({ children }) => {
         const userData = res.data.user;
         setUser(userData);
         localStorage.setItem("user", JSON.stringify(userData));
-        localStorage.setItem("token", res.data.token); // Store token here
+        localStorage.setItem("token", res.data.token);
         return userData;
       } else {
         return res.data.message || "Login failed.";
       }
     } catch (error) {
-      console.error("Login failed:", error.response?.data?.message || error.message);
       return error.response?.data?.message || "Invalid credentials. Please try again.";
     }
   };
 
   const logout = async () => {
     try {
-      await axios.post("http://localhost:5000/api/auth/logout", {}, {
-        withCredentials: true,
-      });
+      await axios.post("http://localhost:5000/api/auth/logout", {}, { withCredentials: true });
       setUser(null);
       localStorage.removeItem("user");
-      localStorage.removeItem("token"); // Remove token on logout
-
-    } catch (error) {
-      console.error("Logout failed:", error);
-    }
+      localStorage.removeItem("token");
+    } catch {}
   };
 
   const updateUser = async (updatedData) => {
@@ -93,13 +87,11 @@ export const AuthProvider = ({ children }) => {
       const res = await axios.put("http://localhost:5000/api/auth/update", updatedData, {
         withCredentials: true,
       });
-
       const updatedUser = res.data.user;
       setUser(updatedUser);
       localStorage.setItem("user", JSON.stringify(updatedUser));
       return updatedUser;
-    } catch (error) {
-      console.error("Profile update failed:", error.response?.data?.message || error.message);
+    } catch {
       return null;
     }
   };
@@ -109,23 +101,22 @@ export const AuthProvider = ({ children }) => {
       const res = await axios.post("http://localhost:5000/api/auth/register", userData, {
         withCredentials: true,
       });
-
       const newUser = res.data.user;
       setUser(newUser);
       localStorage.setItem("user", JSON.stringify(newUser));
-
+      toast.success("Registration successful! Please complete your profile.");
       await login(userData.uin, userData.password);
-
       return { status: "success", user: newUser };
     } catch (error) {
       const message = error.response?.data?.message || "Signup failed";
-      console.error("Sign-up failed:", message);
       return { status: "error", message };
     }
   };
 
   return (
-    <AuthContext.Provider value={{ user, setUser, signup, login, logout, updateUser, checkAuth, loading }}>
+    <AuthContext.Provider
+      value={{ user, setUser, signup, login, logout, updateUser, checkAuth, loading }}
+    >
       {children}
     </AuthContext.Provider>
   );

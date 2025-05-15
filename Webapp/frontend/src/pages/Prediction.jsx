@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { LoaderCircle } from "lucide-react";
+import toast from "react-hot-toast";
 
 const Prediction = () => {
   const { user } = useAuth();
@@ -19,6 +20,7 @@ const Prediction = () => {
   });
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
+  const [feedback, setFeedback] = useState(""); // Added state for feedback
 
   useEffect(() => {
     if (user) {
@@ -51,9 +53,10 @@ const Prediction = () => {
   const handleSubmit = async () => {
     setLoading(true);
     setResult(null);
+    setFeedback(""); // Clear previous feedback
 
     if (!inputData.cholesterol || !inputData.glucose) {
-      alert("Please select both cholesterol and glucose levels.");
+      toast.error("Please select both cholesterol and glucose levels.");
       setLoading(false);
       return;
     }
@@ -127,7 +130,14 @@ const Prediction = () => {
       }
 
       setResult(data);
-    } catch (error) {
+// After saving prediction:
+const saveData = await saveResponse.json();
+console.log("Save response:", saveData);
+const fb = typeof saveData.data.feedback === "string"
+  ? saveData.data.feedback
+  : saveData.data.feedback?.content || "No feedback available";
+setFeedback(fb);
+   } catch (error) {
       setResult({ error: error.message });
     } finally {
       setLoading(false);
@@ -374,7 +384,7 @@ const Prediction = () => {
         </button>
       </form>
 
-      {result && (
+  {result && (
         <div
           className="mt-8 p-6 rounded text-center"
           style={{ backgroundColor: "var(--color-bg-alt)" }}
@@ -395,6 +405,18 @@ const Prediction = () => {
               </p>
             </>
           )}
+        </div>
+      )}
+
+      {feedback && (
+        <div
+          className="mt-4 p-4 bg-gray-100 rounded text-left text-gray-800"
+          role="region"
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          <h4 className="text-lg font-semibold mb-2">Health Feedback</h4>
+          <p>{feedback}</p>
         </div>
       )}
     </div>

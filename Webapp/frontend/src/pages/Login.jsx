@@ -2,6 +2,7 @@ import { useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import { LogIn } from "lucide-react";
+import toast from "react-hot-toast";
 
 function Login() {
   const [uin, setUin] = useState("");
@@ -16,7 +17,7 @@ function Login() {
       setUser(loggedUser);
       navigate(loggedUser.role === "doctor" ? "/doctor/profile" : "/dashboard");
     } else {
-      alert("Login failed.");
+      toast.error("Login failed.");
     }
   };
 

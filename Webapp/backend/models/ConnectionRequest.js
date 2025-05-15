@@ -16,7 +16,7 @@ const connectionRequestSchema = new Schema({
   },
   status: {
     type: String,
-    enum: ['pending_client_approval', 'client_accepted', 'client_rejected', 'doctor_cancelled'],
+    enum: ['pending_client_approval', 'client_accepted', 'client_rejected', 'doctor_cancelled', "disconnected" ],
     default: 'pending_client_approval'
   },
   requestTimestamp: { // When the doctor sent the request

@@ -1,4 +1,3 @@
-// App.jsx
 import { useAuth } from "./context/AuthContext";
 import { useEffect, useRef } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
@@ -13,10 +12,9 @@ import PredictionList from "./components/PredictionList";
 import PasswordRecovery from "./pages/PasswordRecovery";
 import BrowseClients from "./pages/BrowseClients";
 import ConnectionRequests from "./pages/ConnectionRequests";
+import DoctorProfile from "./pages/DoctorProfile";
 import "./styles/styles.css";
-import DoctorProfile from "./pages/DoctorProfile"; // 👈 Add this line
-import { Toaster } from "react-hot-toast";
-
+import toast, { Toaster } from "react-hot-toast";
 
 function App() {
   const { user, logout } = useAuth();
@@ -28,7 +26,7 @@ function App() {
     const resetTimer = () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       timeoutRef.current = setTimeout(() => {
-        alert("Вы были автоматически разлогинены из-за бездействия.");
+        toast.error("Вы были автоматически разлогинены из-за бездействия.");
         logout();
       }, 300_000);
     };
@@ -44,25 +42,25 @@ function App() {
   }, [user, logout]);
 
   return (
-      <div className="app-container">
-        <Navbar />
-        <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
-        <div className="content">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <Login />} />
-            <Route path="/signup" element={user ? <Navigate to="/dashboard" /> : <Signup />} />
-            <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/login" />} />
-            <Route path="/prediction" element={user ? <Prediction /> : <Navigate to="/login" />} />
-            <Route path="/profile" element={user ? <Profile /> : <Navigate to="/login" />} />
-            <Route path="/doctor/patients/:uin/predictions" element={<PredictionList />} />
-            <Route path="/forgot-password" element={<PasswordRecovery />} />
-            <Route path="/doctor/profile" element={<DoctorProfile />} />
-            <Route path="/doctor/clients" element={<BrowseClients />} />
-            <Route path="/connection-requests" element={<ConnectionRequests />} />
-            </Routes>
-        </div>
+    <div className="app-container">
+      <Navbar />
+      <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
+      <div className="content">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <Login />} />
+          <Route path="/signup" element={user ? <Navigate to="/dashboard" /> : <Signup />} />
+          <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/login" />} />
+          <Route path="/prediction" element={user ? <Prediction /> : <Navigate to="/login" />} />
+          <Route path="/profile" element={user ? <Profile /> : <Navigate to="/login" />} />
+          <Route path="/doctor/patients/:uin/predictions" element={<PredictionList />} />
+          <Route path="/forgot-password" element={<PasswordRecovery />} />
+          <Route path="/doctor/profile" element={<DoctorProfile />} />
+          <Route path="/doctor/clients" element={<BrowseClients />} />
+          <Route path="/connection-requests" element={<ConnectionRequests />} />
+        </Routes>
       </div>
+    </div>
   );
 }
 
