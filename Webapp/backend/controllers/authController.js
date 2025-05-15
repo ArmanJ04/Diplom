@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 
 const SECRET_KEY = process.env.JWT_SECRET || "your_secret_key";
-
+const RESET_SECRET = process.env.RESET_SECRET || "reset_secret_key";
 // Create a transporter for Nodemailer
 const transporter = nodemailer.createTransport({
   service: "gmail", // You can use other services like SendGrid, Mailgun, etc.
@@ -48,12 +48,12 @@ exports.register = async (req, res) => {
     const newUser = new User(userData);
     await newUser.save();
 
-    // Generate JWT token for user
-const token = jwt.sign(
-  { userId: user._id, role: user.role },  // <-- role included here
-  SECRET_KEY,
-  { expiresIn: "1d" }
-);
+    // Generate JWT token for user using newUser
+    const token = jwt.sign(
+      { userId: newUser._id, role: newUser.role },
+      SECRET_KEY,
+      { expiresIn: "1d" }
+    );
 
     const { password: _, ...userDataSafe } = newUser._doc;
 
@@ -132,14 +132,18 @@ exports.checkAuth = async (req, res) => {
 
 exports.requestPasswordReset = async (req, res) => {
   const { email } = req.body;
+
   try {
     const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ message: "User not found" });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
-    const token = jwt.sign({ id: user._id }, RESET_SECRET, { expiresIn: "15m" });
+    const resetToken = jwt.sign({ id: user._id }, RESET_SECRET, { expiresIn: '15m' });
 
-    const resetUrl = `${process.env.CLIENT_URL}/reset-password/${token}`;
+    const resetUrl = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
 
+    // Send reset email
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: email,
@@ -156,8 +160,9 @@ exports.requestPasswordReset = async (req, res) => {
   }
 };
 
+// Password Reset (Handling the Token and Reset)
 exports.resetPassword = async (req, res) => {
-  const token = req.params.token;
+  const { token } = req.params;
   const { password } = req.body;
 
   try {
@@ -175,6 +180,8 @@ exports.resetPassword = async (req, res) => {
     res.status(400).json({ message: "Invalid or expired token" });
   }
 };
+
+// Send Email Notification (Helper Function)
 const sendNotification = (recipientEmail, subject, message) => {
   const mailOptions = {
     from: process.env.EMAIL_USER,
@@ -192,7 +199,6 @@ const sendNotification = (recipientEmail, subject, message) => {
   });
 };
 
-// Example: Sending notification when a doctor confirms a prediction
 exports.confirmPrediction = async (req, res) => {
   const { clientId, predictionId } = req.body;
 
