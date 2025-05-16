@@ -9,7 +9,7 @@ const qs = require("querystring");
 
 router.use(authMiddleware);
 
-const apiKey = process.env.API_KEY || "b57bd78af5379de05d7b1e6c801bd495";
+const apiKey = process.env.API_KEY;
 
 const openai = new OpenAI({
   apiKey: apiKey,
