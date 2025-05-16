@@ -349,3 +349,84 @@ select option[value=""][disabled] {
 [data-theme="dark"] select option[value=""][disabled] {
   color: var(--color-text-secondary);
 }
+.hero-section {
+  text-align: center;
+  padding: 80px 20px;
+  background: var(--color-bg-alt);
+  border-radius: 20px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+  margin-bottom: 60px;
+}
+
+.hero-title {
+  font-size: 3rem;
+  font-weight: 800;
+  margin-bottom: 12px;
+}
+
+.hero-subtitle {
+  font-size: 1.75rem;
+  color: var(--color-secondary);
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+
+.hero-description {
+  max-width: 640px;
+  margin: 0 auto 30px;
+  font-size: 1.1rem;
+}
+
+.hero-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 2px solid var(--color-primary);
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.btn-outline:hover {
+  background: var(--color-primary);
+  color: white;
+}
+
+.features-section {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 40px auto;
+}
+
+.feature-card {
+  flex: 1 1 250px;
+  background: var(--color-bg-alt);
+  padding: 30px 20px;
+  border-radius: 18px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  text-align: center;
+  transition: transform 0.3s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-6px);
+}
+
+.feature-icon {
+  font-size: 2.5rem;
+  margin-bottom: 15px;
+  color: var(--color-primary);
+}
+
+.feature-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
