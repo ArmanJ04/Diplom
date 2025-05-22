@@ -1,48 +1,32 @@
 import React, { useContext, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import { Sun, Moon } from "lucide-react";
 
 function Navbar() {
   const { user, logout } = useContext(AuthContext);
   const [dropdownVisible, setDropdownVisible] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(() => {
-    return localStorage.getItem("theme") === "dark";
+    return (
+      localStorage.getItem("theme") === "dark" ||
+      window.matchMedia("(prefers-color-scheme: dark)").matches
+    );
   });
 
   useEffect(() => {
-    function closeOnResize() {
-      setMenuOpen(false);
-    }
-
-    if (menuOpen) {
-      window.addEventListener("resize", closeOnResize);
-    }
-
     if (darkMode) {
       document.documentElement.setAttribute("data-theme", "dark");
       localStorage.setItem("theme", "dark");
     } else {
-      document.documentElement.removeAttribute("data-theme");
+      document.documentElement.setAttribute("data-theme", "light");
       localStorage.setItem("theme", "light");
     }
-
-    return () => {
-      window.removeEventListener("resize", closeOnResize);
-    };
-  }, [menuOpen, darkMode]);
+  }, [darkMode]);
 
   return (
-    <nav className="navbar">
-      <div className={`navbar-left ${menuOpen ? "menu-open" : ""}`}>
-        <button
-          aria-label="Toggle menu"
-          className="hamburger-btn"
-          onClick={() => setMenuOpen((prev) => !prev)}
-        >
-          ☰
-        </button>
-        <Link to="/" className="navbar-link">
+    <nav className="navbar" style={{ animation: "fadeIn 0.8s ease" }}>
+      <div className="navbar-left">
+        <Link to="/" className="navbar-link" aria-label="Home">
           Home
         </Link>
         {user && user.role === "doctor" && (
@@ -67,7 +51,7 @@ function Navbar() {
               Profile
             </Link>
             <Link to="/connection-requests" className="navbar-link">
-              View Doctor Requests
+              Doctor Requests
             </Link>
           </>
         )}
@@ -75,13 +59,18 @@ function Navbar() {
 
       <div className="navbar-right">
         <button
-          onClick={() => setDarkMode((prev) => !prev)}
+          onClick={() => setDarkMode(!darkMode)}
           aria-label="Toggle Dark Mode"
           title="Toggle Dark Mode"
-          className="navbar-link"
-          style={{ padding: "10px 16px", cursor: "pointer" }}
+          style={{
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            marginRight: "16px",
+            color: "var(--color-text-primary)",
+          }}
         >
-          {darkMode ? "☀️" : "🌙"}
+          {darkMode ? <Sun size={20} /> : <Moon size={20} />}
         </button>
 
         {user ? (
@@ -90,13 +79,20 @@ function Navbar() {
             onMouseEnter={() => setDropdownVisible(true)}
             onMouseLeave={() => setDropdownVisible(false)}
           >
-            <span className="dropdown-toggle">{user.firstName}</span>
+            <span
+              className="dropdown-toggle"
+              tabIndex={0}
+              aria-haspopup="true"
+              aria-expanded={dropdownVisible}
+            >
+              {user.firstName}
+            </span>
             {dropdownVisible && (
-              <div className="dropdown-menu">
+              <div className="dropdown-menu" role="menu">
                 <p>
                   {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
                 </p>
-                <button onClick={logout} className="logout-button">
+                <button onClick={logout} className="logout-button" role="menuitem">
                   Logout
                 </button>
               </div>

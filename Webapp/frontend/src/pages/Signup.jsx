@@ -42,74 +42,125 @@ function Signup() {
   };
 
   return (
-    <div className="page-background" style={{ minHeight: "100vh", padding: "20px" }}>
-      <div className="page-centered">
-        <h2>Create Your CardioCare Account</h2>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <select
-            name="role"
-            value={formData.role}
-            onChange={handleChange}
-            required
-            style={{ color: formData.role ? "inherit" : "var(--color-text-secondary)" }}
-          >
-            <option value="" disabled>
-              Select Role
-            </option>
-            <option value="patient">Patient</option>
-            <option value="doctor">Doctor</option>
-          </select>
-          <input
-            type="text"
-            name="firstName"
-            placeholder="First Name"
-            value={formData.firstName}
-            onChange={handleChange}
-            required
-          />
-          <input
-            type="text"
-            name="lastName"
-            placeholder="Last Name"
-            value={formData.lastName}
-            onChange={handleChange}
-            required
-          />
-          <input
-            type="text"
-            name="uin"
-            placeholder="UIN (12 digits)"
-            value={formData.uin}
-            onChange={handleChange}
-            required
-          />
-          <input
-            type="email"
-            name="email"
-            placeholder="Email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-          />
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-          />
-          <button type="submit" className="btn-icon">
-            <UserPlus className="w-6 h-6" />
-            Sign Up
-          </button>
-        </form>
-        <div className="small-text mt-8">
-          <p>
-            Already have an account? <Link to="/login">Log in here</Link>
-          </p>
-        </div>
-      </div>
+    <div
+      className="page-background"
+      style={{
+        minHeight: "100vh",
+        padding: "80px 20px",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
+      <form
+        onSubmit={handleSubmit}
+        className="page-centered"
+        style={{ maxWidth: "480px", animation: "fadeIn 0.9s ease" }}
+      >
+        <h2
+          style={{
+            color: "var(--color-primary)",
+            fontWeight: "800",
+            fontSize: "2.5rem",
+            marginBottom: "32px",
+            textAlign: "center",
+          }}
+        >
+          Create Your CardioCare Account
+        </h2>
+        <label htmlFor="role">Select Role</label>
+        <select
+          id="role"
+          name="role"
+          value={formData.role}
+          onChange={handleChange}
+          required
+          style={{ color: formData.role ? "inherit" : "var(--color-text-secondary)" }}
+        >
+          <option value="" disabled>
+            Select Role
+          </option>
+          <option value="patient">Patient</option>
+          <option value="doctor">Doctor</option>
+        </select>
+
+        <label htmlFor="firstName">First Name</label>
+        <input
+          id="firstName"
+          type="text"
+          name="firstName"
+          placeholder="First Name"
+          value={formData.firstName}
+          onChange={handleChange}
+          required
+        />
+
+        <label htmlFor="lastName">Last Name</label>
+        <input
+          id="lastName"
+          type="text"
+          name="lastName"
+          placeholder="Last Name"
+          value={formData.lastName}
+          onChange={handleChange}
+          required
+        />
+
+        <label htmlFor="uin">UIN (12 digits)</label>
+        <input
+          id="uin"
+          type="text"
+          name="uin"
+          placeholder="UIN (12 digits)"
+          value={formData.uin}
+          onChange={handleChange}
+          required
+        />
+
+        <label htmlFor="email">Email</label>
+        <input
+          id="email"
+          type="email"
+          name="email"
+          placeholder="Email"
+          value={formData.email}
+          onChange={handleChange}
+          required
+        />
+
+        <label htmlFor="password">Password</label>
+        <input
+          id="password"
+          type="password"
+          name="password"
+          placeholder="Password"
+          value={formData.password}
+          onChange={handleChange}
+          required
+        />
+
+        <button
+          type="submit"
+          className="btn-primary"
+          style={{
+            marginTop: "20px",
+            padding: "16px 0",
+            fontSize: "1.2rem",
+            borderRadius: "32px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "12px",
+          }}
+        >
+          <UserPlus size={24} />
+          Sign Up
+        </button>
+
+        <p className="small-text" style={{ marginTop: "28px" }}>
+          Already have an account? <Link to="/login">Log in here</Link>
+        </p>
+      </form>
     </div>
   );
 }

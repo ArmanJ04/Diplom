@@ -13,9 +13,9 @@ import {
   ChevronUp,
   Search,
   Mail,
-  CreditCard,  // instead of Id
+  CreditCard,
   Droplet,
-    User,   // Add this
+  User,
 } from "lucide-react";
 
 function Profile() {
@@ -60,22 +60,15 @@ function Profile() {
       setHistory([]);
       return;
     }
-
     try {
       const response = await fetch(
         `http://localhost:5000/api/prediction/history?uin=${uin}`,
         {
           method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
-
-      if (!response.ok) {
-        throw new Error("API Error");
-      }
-
+      if (!response.ok) throw new Error("API Error");
       const data = await response.json();
       setHistory(Array.isArray(data.history) ? data.history : []);
     } catch {
@@ -97,12 +90,10 @@ function Profile() {
   const handleSave = async () => {
     const updated = { ...formData, birthdate: formatDateForInput(formData.birthdate) };
     const updatedUser = await updateUser(updated);
-
     if (!updatedUser) {
       alert("Failed to update profile. Please try again.");
       return;
     }
-
     setFormData({
       ...updatedUser,
       birthdate: formatDateForInput(updatedUser.birthdate),
@@ -134,241 +125,272 @@ function Profile() {
     });
 
   return (
-    <div className="page-container">
-      <h1 className="text-3xl font-bold text-blue-700 mb-6 text-center">My Profile</h1>
+    <div className="page-container" style={{ animation: "fadeIn 0.9s ease" }}>
+      <h1 className="text-3xl font-bold text-center" style={{ color: "var(--color-primary)" }}>
+        My Profile
+      </h1>
 
-      <div className="space-y-4">
-        {editable ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <input
-              name="firstName"
-              value={formData.firstName}
-              onChange={handleChange}
-              placeholder="First Name"
-              className="input"
-            />
-            <input
-              name="lastName"
-              value={formData.lastName}
-              onChange={handleChange}
-              placeholder="Last Name"
-              className="input"
-            />
-            <input name="email" value={formData.email} disabled className="input" />
-            <input name="uin" value={formData.uin} disabled className="input" />
-            <input
-              name="birthdate"
-              type="date"
-              value={formData.birthdate}
-              onChange={handleChange}
-              className="input"
-            />
-            <input
-              name="height"
-              value={formData.height}
-              onChange={handleChange}
-              placeholder="Height (cm)"
-              className="input"
-            />
-            <input
-              name="weight"
-              value={formData.weight}
-              onChange={handleChange}
-              placeholder="Weight (kg)"
-              className="input"
-            />
-            <select name="gender" value={formData.gender} onChange={handleChange} className="input">
+      {editable ? (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSave();
+          }}
+          style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}
+        >
+          {/* Inputs same as before */}
+          <div><label htmlFor="firstName">First Name</label><input id="firstName" name="firstName" value={formData.firstName} onChange={handleChange} required/></div>
+          <div><label htmlFor="lastName">Last Name</label><input id="lastName" name="lastName" value={formData.lastName} onChange={handleChange} required/></div>
+          <div><label htmlFor="email">Email</label><input id="email" name="email" value={formData.email} disabled /></div>
+          <div><label htmlFor="uin">UIN</label><input id="uin" name="uin" value={formData.uin} disabled /></div>
+          <div><label htmlFor="birthdate">Birthdate</label><input id="birthdate" type="date" name="birthdate" value={formData.birthdate} onChange={handleChange} required/></div>
+          <div><label htmlFor="height">Height (cm)</label><input id="height" name="height" value={formData.height} onChange={handleChange} /></div>
+          <div><label htmlFor="weight">Weight (kg)</label><input id="weight" name="weight" value={formData.weight} onChange={handleChange} /></div>
+          <div>
+            <label htmlFor="gender">Gender</label>
+            <select id="gender" name="gender" value={formData.gender} onChange={handleChange} required>
               <option value="">Select Gender</option>
               <option value="male">Male</option>
               <option value="female">Female</option>
             </select>
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                name="smoking"
-                checked={formData.smoking}
-                onChange={handleChange}
-              />{" "}
-              Smoking
-            </label>
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                name="alcohol"
-                checked={formData.alcohol}
-                onChange={handleChange}
-              />{" "}
-              Alcohol
-            </label>
-            <input
-              name="physicalActivity"
-              value={formData.physicalActivity}
-              onChange={handleChange}
-              placeholder="Physical Activity (hrs/week)"
-              className="input"
-            />
           </div>
-        ) : (
-          <div className="space-y-1 text-gray-700">
-            <p>
-              <UserCircle2 className="inline w-5 h-5 mr-2" /> <strong>Name:</strong> {formData.firstName}{" "}
-              {formData.lastName}
-            </p>
-            <p>
-              <Mail className="inline w-5 h-5 mr-2" /> <strong>Email:</strong> {formData.email}
-            </p>
-            <p>
-  <CreditCard className="inline w-5 h-5 mr-2" /> <strong>UIN:</strong> {formData.uin}
-            </p>
-            <p>
-              <CalendarDays className="inline w-5 h-5 mr-2" /> <strong>Birthdate:</strong>{" "}
-              {formData.birthdate}
-            </p>
-            <p>
-  <User className="inline w-5 h-5 mr-2" /> <strong>Gender:</strong> {formData.gender}
-            </p>
-            <p>
-              <Ruler className="inline w-5 h-5 mr-2" /> <strong>Height:</strong> {formData.height} cm
-            </p>
-            <p>
-              <Weight className="inline w-5 h-5 mr-2" /> <strong>Weight:</strong> {formData.weight} kg
-            </p>
-            <p>
-              <Flame className="inline w-5 h-5 mr-2" /> <strong>Smoking:</strong> {formData.smoking ? "Yes" : "No"}
-            </p>
-            <p>
-  <Droplet className="inline w-5 h-5 mr-2" /> <strong>Alcohol:</strong> {formData.alcohol ? "Yes" : "No"}
-            </p>
-            <p>
-              <Activity className="inline w-5 h-5 mr-2" /> <strong>Physical Activity:</strong>{" "}
-              {formData.physicalActivity} hrs/week
-            </p>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <input type="checkbox" id="smoking" name="smoking" checked={formData.smoking} onChange={handleChange} />
+            <label htmlFor="smoking">Smoking</label>
           </div>
-        )}
-      </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <input type="checkbox" id="alcohol" name="alcohol" checked={formData.alcohol} onChange={handleChange} />
+            <label htmlFor="alcohol">Alcohol</label>
+          </div>
+          <div><label htmlFor="physicalActivity">Physical Activity (hrs/week)</label><input id="physicalActivity" name="physicalActivity" value={formData.physicalActivity} onChange={handleChange} /></div>
 
-      <div className="mt-4 text-center">
-        {editable ? (
-          <button
-            onClick={handleSave}
-            className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
-          >
-            Save
-          </button>
-        ) : (
-          <button
-            onClick={() => setEditable(true)}
-            className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-          >
-            Edit
-          </button>
-        )}
-      </div>
+          <div style={{ gridColumn: "1 / -1", textAlign: "center" }}>
+            <button type="submit" className="btn-primary" style={{ width: "200px" }}>
+              Save Changes
+            </button>
+          </div>
+        </form>
+      ) : (
+        <section
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+            gap: "24px",
+            marginTop: "40px",
+          }}
+        >
+          {/* Card style for each info */}
+          <InfoCard icon={<UserCircle2 size={36} color="#2563eb" />} label="Name" value={`${formData.firstName} ${formData.lastName}`} />
+          <InfoCard icon={<Mail size={36} color="#2563eb" />} label="Email" value={formData.email} />
+          <InfoCard icon={<CreditCard size={36} color="#2563eb" />} label="UIN" value={formData.uin} />
+          <InfoCard icon={<CalendarDays size={36} color="#2563eb" />} label="Birthdate" value={formData.birthdate} />
+          <InfoCard icon={<User size={36} color="#2563eb" />} label="Gender" value={formData.gender} />
+          <InfoCard icon={<Ruler size={36} color="#2563eb" />} label="Height" value={`${formData.height} cm`} />
+          <InfoCard icon={<Weight size={36} color="#2563eb" />} label="Weight" value={`${formData.weight} kg`} />
+          <InfoCard icon={<Flame size={36} color="#2563eb" />} label="Smoking" value={formData.smoking ? "Yes" : "No"} />
+          <InfoCard icon={<Droplet size={36} color="#2563eb" />} label="Alcohol" value={formData.alcohol ? "Yes" : "No"} />
+          <InfoCard icon={<Activity size={36} color="#2563eb" />} label="Physical Activity" value={`${formData.physicalActivity} hrs/week`} />
+          <div style={{ gridColumn: "1 / -1", textAlign: "center" }}>
+            <button className="btn-primary" style={{ width: "200px" }} onClick={() => setEditable(true)}>
+              Edit Profile
+            </button>
+          </div>
+        </section>
+      )}
 
-      <div className="mt-10">
+      {/* History Section (unchanged - keep your liked version) */}
+      <div style={{ marginTop: "48px" }}>
         <button
           onClick={() => setShowHistory(!showHistory)}
-          className="flex items-center gap-2 text-blue-600 hover:underline mb-2 px-3 py-1 rounded-lg border border-blue-400 hover:bg-blue-100 transition"
           aria-expanded={showHistory}
+          className="btn-outline"
+          style={{ width: "100%", maxWidth: "320px", marginBottom: "24px" }}
         >
-          {showHistory ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-          <span className="ml-1 font-semibold">{showHistory ? "Hide Prediction History" : "Show Prediction History"}</span>
+          {showHistory ? "Hide Prediction History ▲" : "Show Prediction History ▼"}
         </button>
 
-        {showHistory && (
-          <div>
-            <div className="flex items-center gap-3 mb-4">
-              <Search className="w-5 h-5 text-gray-600" />
-              <input
-                type="text"
-                placeholder="Search by date (DD/MM/YYYY)"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="border px-3 py-2 rounded-md w-full"
-                aria-label="Search prediction history by date"
-              />
-              <button
-                className="text-sm text-blue-600 underline px-3 py-1 rounded-lg hover:bg-blue-100 transition"
-                onClick={() => setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"))}
-                aria-label={`Sort predictions by date ${sortOrder === "asc" ? "ascending" : "descending"}`}
-              >
-                Sort: {sortOrder === "asc" ? "Oldest" : "Newest"}
-              </button>
-            </div>
-            {filteredHistory.length === 0 ? (
-              <p className="text-gray-500">No predictions found.</p>
-            ) : (
-              <ul className="space-y-3" role="list">
-                {filteredHistory.map((entry, idx) => {
-                  const isExpanded = expandedIds.includes(entry._id || idx);
-                  return (
-                    <li
-                      key={entry._id || idx}
-                      className="bg-slate-100 p-4 rounded-lg shadow-sm"
-                    >
-                      <p
-                        onClick={() => toggleExpanded(entry._id || idx)}
-                        className="cursor-pointer flex justify-between items-center"
-                        aria-expanded={isExpanded}
-                        tabIndex={0}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ") toggleExpanded(entry._id || idx);
-                        }}
-                        role="button"
-                        aria-controls={`prediction-details-${entry._id || idx}`}
-                      >
-                        <span>
-                          <HeartPulse className="inline w-5 h-5 mr-1 text-pink-600" />
-                          <strong>Risk Score:</strong>{" "}
-                          <span className={`font-bold ${getColor(entry.prediction)}`}>
-                            {(entry.prediction * 100).toFixed(2)}%
-                          </span>
-                        </span>
-                        {isExpanded ? (
-                          <ChevronUp className="w-5 h-5" />
-                        ) : (
-                          <ChevronDown className="w-5 h-5" />
-                        )}
-                      </p>
+{showHistory && (
+  <section
+    aria-label="Prediction History"
+    style={{
+      marginTop: "32px",
+      maxWidth: "700px",
+      marginLeft: "auto",
+      marginRight: "auto",
+    }}
+  >
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "12px",
+        marginBottom: "20px",
+        flexWrap: "wrap",
+        justifyContent: "space-between",
+      }}
+    >
+      <div style={{ flexGrow: 1, minWidth: 200, display: "flex", alignItems: "center", gap: "8px" }}>
+        <Search size={20} />
+        <input
+          type="text"
+          placeholder="Search by date (DD/MM/YYYY)"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          aria-label="Search prediction history by date"
+          style={{
+            width: "100%",
+            padding: "10px 14px",
+            borderRadius: "12px",
+            border: "1.5px solid #d1d5db",
+            fontSize: "1rem",
+          }}
+        />
+      </div>
 
-                      {isExpanded && (
-                        <div
-                          id={`prediction-details-${entry._id || idx}`}
-                          className="mt-3 text-sm text-gray-700"
-                        >
-                          <p>Date: {new Date(entry.timestamp).toLocaleString()}</p>
-                          {entry.feedback && (
-                            <p>
-                              <strong>Doctor's Feedback:</strong> {entry.feedback}
-                            </p>
-                          )}
-                          {entry.status && (
-                            <p>
-                              <strong>Prediction Status:</strong> {entry.status}
-                            </p>
-                          )}
-                          <p>
-                            <strong>Medical Inputs:</strong>
-                          </p>
-                          <ul className="list-disc ml-6">
-                            {Object.entries(entry.medicalInputs || {}).map(([key, value]) => (
-                              <li key={key}>
-                                <strong>{key}:</strong> {String(value)}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </div>
-        )}
+      <button
+        onClick={() => setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"))}
+        aria-label={`Sort predictions by date ${sortOrder === "asc" ? "ascending" : "descending"}`}
+        style={{
+          padding: "10px 20px",
+          fontWeight: "600",
+          fontSize: "1rem",
+          borderRadius: "20px",
+          border: "none",
+          backgroundColor: "var(--color-primary)",
+          color: "white",
+          cursor: "pointer",
+          minWidth: 140,
+          transition: "background-color 0.3s ease",
+        }}
+        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#1a3aa8")}
+        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "var(--color-primary)")}
+      >
+        Sort: {sortOrder === "asc" ? "Oldest" : "Newest"}
+      </button>
+    </div>
+
+    {filteredHistory.length === 0 ? (
+      <p style={{ color: "var(--color-text-secondary)", textAlign: "center", fontSize: "1rem" }}>
+        No predictions found.
+      </p>
+    ) : (
+      <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "20px" }}>
+        {filteredHistory.map((entry, idx) => {
+          const id = entry._id || idx;
+          const isExpanded = expandedIds.includes(id);
+          return (
+            <li
+              key={id}
+              style={{
+                background: "var(--color-bg-alt)",
+                padding: "24px",
+                borderRadius: "20px",
+                boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
+                cursor: "pointer",
+                userSelect: "none",
+                transition: "transform 0.3s ease",
+                transform: isExpanded ? "scale(1.02)" : "none",
+              }}
+              onClick={() => toggleExpanded(id)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") toggleExpanded(id);
+              }}
+              role="button"
+              tabIndex={0}
+              aria-expanded={isExpanded}
+              aria-controls={`prediction-details-${id}`}
+              aria-label={`Toggle details for prediction dated ${new Date(entry.timestamp).toLocaleDateString()}`}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                  <HeartPulse size={28} color="#ec4899" aria-hidden="true" />
+                  <strong style={{ fontSize: "1.25rem" }}>
+                    Risk Score:{" "}
+                    <span
+                      className={
+                        entry.prediction * 100 < 30
+                          ? "text-green-600"
+                          : entry.prediction * 100 < 70
+                          ? "text-yellow-600"
+                          : "text-red-600"
+                      }
+                      style={{ fontWeight: "700" }}
+                    >
+                      {(entry.prediction * 100).toFixed(2)}%
+                    </span>
+                  </strong>
+                </div>
+                <span style={{ fontSize: "1.5rem", fontWeight: "700" }}>
+                  {isExpanded ? "▲" : "▼"}
+                </span>
+              </div>
+
+              {isExpanded && (
+                <div
+                  id={`prediction-details-${id}`}
+                  style={{ marginTop: "16px", color: "var(--color-text-secondary)", fontSize: "0.95rem", lineHeight: 1.5 }}
+                >
+                  <p>
+                    <strong>Date:</strong> {new Date(entry.timestamp).toLocaleString()}
+                  </p>
+                  {entry.feedback && (
+                    <p>
+                      <strong>Doctor's Feedback:</strong> {entry.feedback}
+                    </p>
+                  )}
+                  {entry.status && (
+                    <p>
+                      <strong>Prediction Status:</strong> {entry.status}
+                    </p>
+                  )}
+                  <p>
+                    <strong>Medical Inputs:</strong>
+                  </p>
+                  <ul style={{ paddingLeft: "20px", marginTop: "4px" }}>
+                    {Object.entries(entry.medicalInputs || {}).map(([key, value]) => (
+                      <li key={key}>
+                        <strong>{key}:</strong> {String(value)}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    )}
+  </section>
+)}
+
       </div>
     </div>
   );
 }
+
+const InfoCard = ({ icon, label, value }) => (
+  <article
+    tabIndex={0}
+    style={{
+      background: "var(--color-bg-alt)",
+      padding: "24px",
+      borderRadius: "20px",
+      boxShadow: "0 8px 24px rgba(0,0,0,0.07)",
+      display: "flex",
+      alignItems: "center",
+      gap: "16px",
+      cursor: "default",
+      transition: "transform 0.3s ease",
+    }}
+    onFocus={e => e.currentTarget.style.transform = "scale(1.03)"}
+    onBlur={e => e.currentTarget.style.transform = "scale(1)"}
+  >
+    <div>{icon}</div>
+    <div>
+      <h4 style={{ margin: 0, color: "var(--color-primary)", fontWeight: "700" }}>{label}</h4>
+      <p style={{ margin: 0, color: "var(--color-text-secondary)", fontWeight: "600", fontSize: "1.05rem" }}>{value}</p>
+    </div>
+  </article>
+);
 
 export default Profile;

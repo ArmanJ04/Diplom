@@ -5,7 +5,7 @@ const authMiddleware = require("../middleware/authMiddleware");
 const checkRole = require("../middleware/roleMiddleware");
 
 router.use(authMiddleware);
-router.use(checkRole(['client'])); // All routes here are for clients
+router.use(checkRole(['patient'])); // All routes here are for clients
 
 // GET /api/client/connection-requests - Get pending connection requests for the logged-in client
 router.get("/connection-requests", clientController.getPendingConnectionRequests);

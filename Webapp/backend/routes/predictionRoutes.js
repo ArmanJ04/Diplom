@@ -1,11 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const Prediction = require("../models/Prediction");
-const doctorController = require("../controllers/doctorController");
+const User = require("../models/User");
 const authMiddleware = require("../middleware/authMiddleware");
 const OpenAI = require("openai");
 const axios = require("axios");
 const qs = require("querystring");
+const { sendNotification } = require("../controllers/authController"); // Make sure sendNotification is async exported
 
 router.use(authMiddleware);
 
@@ -105,6 +106,26 @@ Please write a short, professional health feedback summary with recommendations 
 
     await newPredictionDoc.save();
 
+    // Notify assigned doctor about new prediction
+    const patientUser = await User.findOne({ uin });
+    if (patientUser && patientUser.assignedDoctorId) {
+      const doctor = await User.findById(patientUser.assignedDoctorId);
+      if (doctor && doctor.email) {
+        const mailSubject = "New Cardiovascular Prediction Submitted";
+        const mailMessage = `
+          Dear Dr. ${doctor.firstName},
+
+          A new cardiovascular risk prediction has been submitted by patient ${patientUser.firstName} ${patientUser.lastName} (UIN: ${patientUser.uin}).
+
+          Please review and approve or reject the prediction in your dashboard.
+
+          Regards,
+          CardioCare System
+        `;
+        await sendNotification(doctor.email, mailSubject, mailMessage);
+      }
+    }
+
     res.status(201).json({
       message: "Prediction and feedback saved successfully",
       data: newPredictionDoc,
@@ -126,6 +147,7 @@ router.get("/history", async (req, res) => {
     const history = await Prediction.find({ uin }).sort({ timestamp: -1 });
     res.json({ history });
   } catch (error) {
+    console.error("Error fetching prediction history:", error);
     res.status(500).json({ error: "Failed to fetch history" });
   }
 });
