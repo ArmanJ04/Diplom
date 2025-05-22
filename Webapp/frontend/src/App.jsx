@@ -13,8 +13,11 @@ import PasswordRecovery from "./pages/PasswordRecovery";
 import BrowseClients from "./pages/BrowseClients";
 import ConnectionRequests from "./pages/ConnectionRequests";
 import DoctorProfile from "./pages/DoctorProfile";
+import ChatWidget from "./components/ChatWidget";
 import "./styles/styles.css";
 import toast, { Toaster } from "react-hot-toast";
+import AdminPage from "./pages/AdminPage";
+
 
 function App() {
   const { user, logout } = useAuth();
@@ -57,9 +60,12 @@ function App() {
           <Route path="/forgot-password" element={<PasswordRecovery />} />
           <Route path="/doctor/profile" element={<DoctorProfile />} />
           <Route path="/doctor/clients" element={<BrowseClients />} />
+          <Route path="/admin" element={<AdminPage />} />
           <Route path="/connection-requests" element={<ConnectionRequests />} />
         </Routes>
       </div>
+        <ChatWidget />  {/* ✅ Global Chat Popup */}
+
     </div>
   );
 }

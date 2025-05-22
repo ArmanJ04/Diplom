@@ -9,6 +9,7 @@ import os
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils.class_weight import compute_class_weight
+from sklearn.metrics import accuracy_score, roc_auc_score, recall_score, confusion_matrix
 from torch.utils.data import DataLoader, TensorDataset, WeightedRandomSampler
 
 dataset_path = "database/2data/cardio_train.csv"
@@ -118,6 +119,40 @@ def train():
         if early_stopping_counter >= early_stopping_patience:
             print("Early stopping triggered.")
             break
+
+    model.load_state_dict(torch.load(model_path))
+    model.eval()
+
+    all_preds = []
+    all_probs = []
+    all_labels = []
+
+    with torch.no_grad():
+        for inputs, labels in test_loader:
+            inputs = inputs.to(device)
+            outputs = model(inputs).squeeze()
+            probs = torch.sigmoid(outputs)
+            preds = (probs > 0.5).float().cpu().numpy()
+
+            all_preds.extend(preds)
+            all_probs.extend(probs.cpu().numpy())
+            all_labels.extend(labels.numpy())
+
+    y_test = np.array(all_labels)
+    y_pred_class = np.array(all_preds)
+    y_proba = np.array(all_probs)
+
+    accuracy = accuracy_score(y_test, y_pred_class)
+    auc_roc = roc_auc_score(y_test, y_proba)
+    sensitivity = recall_score(y_test, y_pred_class)
+    tn, fp, fn, tp = confusion_matrix(y_test, y_pred_class).ravel()
+    specificity = tn / (tn + fp)
+
+    print("\nFinal Evaluation Metrics:")
+    print(f"Accuracy    : {accuracy:.4f}")
+    print(f"AUC-ROC     : {auc_roc:.4f}")
+    print(f"Sensitivity : {sensitivity:.4f}")
+    print(f"Specificity : {specificity:.4f}")
 
     print("Training complete. Best Accuracy:", best_acc)
 

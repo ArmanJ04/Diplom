@@ -8,11 +8,11 @@ const aiRoutes = require("./routes/aiRoutes");
 const predictionRoutes = require("./routes/predictionRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const doctorRoutes = require("./routes/doctorRoutes");
-
+const chatRoutes = require("./routes/chatRoutes");
 const app = express();
 
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: "http://localhost:5173", // Replace with your frontend URL
   credentials: true, // Allow cookies
 }));
 
@@ -46,6 +46,7 @@ app.use("/api/prediction", predictionRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/doctor", doctorRoutes);
 app.use("/api", doctorRoutes); // Correct
+app.use("/api/chat", chatRoutes);
 
 
 app.listen(PORT, () => {
