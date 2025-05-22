@@ -216,23 +216,16 @@ exports.resetPassword = async (req, res) => {
   }
 };
 
-// Send Email Notification (Helper Function)
-const sendNotification = (recipientEmail, subject, message) => {
-  const mailOptions = {
-    from: process.env.EMAIL_USER,
-    to: recipientEmail,
-    subject: subject,
-    html: `<p>${message}</p>`
-  };
-
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      console.log("Notification email error:", error);
-    } else {
-      console.log("Notification email sent:", info.response);
-    }
-  });
+const sendNotification = async (recipientEmail, subject, message) => {
+  const mailOptions = { from: process.env.EMAIL_USER, to: recipientEmail, subject, html: `<p>${message}</p>` };
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Notification email sent:", info.response);
+  } catch (error) {
+    console.error("Notification email error:", error);
+  }
 };
+
 
 exports.confirmPrediction = async (req, res) => {
   const { clientId, predictionId } = req.body;

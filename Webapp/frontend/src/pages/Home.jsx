@@ -44,12 +44,6 @@ function Home() {
           <button onClick={handlePredictionClick} style={{ marginRight: 12 }}>
             Start Prediction
           </button>
-          <button
-            className="btn-outline"
-            onClick={() => navigate("/learn-more")}
-          >
-            Learn More
-          </button>
         </div>
       </div>
 

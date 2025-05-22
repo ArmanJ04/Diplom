@@ -1,3 +1,4 @@
+// backend/routes/admin.js
 const express = require("express");
 const router = express.Router();
 const User = require("../models/User");
@@ -37,7 +38,7 @@ router.delete("/reject-doctor/:id", async (req, res) => {
   }
 });
 
-// ✅ GET: All users
+// GET: All users
 router.get("/users", async (req, res) => {
   try {
     const users = await User.find();
@@ -47,7 +48,7 @@ router.get("/users", async (req, res) => {
   }
 });
 
-// ✅ GET: Approved doctors
+// GET: Approved doctors
 router.get("/doctors", async (req, res) => {
   try {
     const doctors = await User.find({ role: "doctor", doctorApproved: true });
@@ -57,7 +58,6 @@ router.get("/doctors", async (req, res) => {
   }
 });
 
-// ✅ GET: All predictions
 router.get("/predictions", async (req, res) => {
   try {
     const predictions = await Prediction.find();
@@ -67,7 +67,8 @@ router.get("/predictions", async (req, res) => {
   }
 });
 
-// ✅ DELETE: User by ID
+
+// DELETE: User by ID
 router.delete("/users/:id", async (req, res) => {
   try {
     await User.findByIdAndDelete(req.params.id);
@@ -77,7 +78,7 @@ router.delete("/users/:id", async (req, res) => {
   }
 });
 
-// ✅ GET: Admin dashboard stats
+// GET: Admin dashboard stats
 router.get("/stats", async (req, res) => {
   try {
     const users = await User.countDocuments();

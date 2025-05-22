@@ -131,6 +131,24 @@ exports.approvePrediction = async (req, res) => {
 
     prediction.status = "approved";
     await prediction.save();
+
+    // Notify patient
+    const patient = await User.findOne({ uin: prediction.uin });
+    if (patient && patient.email) {
+      const mailSubject = "Your Cardiovascular Prediction was Approved";
+      const mailMessage = `
+        Dear ${patient.firstName},
+
+        Your cardiovascular risk prediction submitted on ${prediction.timestamp.toDateString()} was approved by your doctor.
+
+        Please check your dashboard for detailed feedback.
+
+        Regards,
+        CardioCare System
+      `;
+      sendNotification(patient.email, mailSubject, mailMessage);
+    }
+
     res.json({ message: "Prediction approved.", prediction });
   } catch (error) {
     console.error("Approve error:", error);
@@ -146,12 +164,31 @@ exports.cancelPrediction = async (req, res) => {
 
     prediction.status = "canceled";
     await prediction.save();
+
+    // Notify patient
+    const patient = await User.findOne({ uin: prediction.uin });
+    if (patient && patient.email) {
+      const mailSubject = "Your Cardiovascular Prediction was Rejected";
+      const mailMessage = `
+        Dear ${patient.firstName},
+
+        Your cardiovascular risk prediction submitted on ${prediction.timestamp.toDateString()} was rejected by your doctor.
+
+        Please contact your doctor or check your dashboard for more details.
+
+        Regards,
+        CardioCare System
+      `;
+      sendNotification(patient.email, mailSubject, mailMessage);
+    }
+
     res.json({ message: "Prediction canceled.", prediction });
   } catch (error) {
     console.error("Cancel error:", error);
     res.status(500).json({ message: "Server error." });
   }
 };
+
 
 exports.addPredictionFeedback = async (req, res) => {
   const { predictionId } = req.params;

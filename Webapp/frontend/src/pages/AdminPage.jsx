@@ -1,22 +1,28 @@
-// AdminPage.jsx — просмотр всех пользователей, докторов и предсказаний с действиями и фильтрами
-import React, { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import {
-  ShieldCheck, User2, CheckCircle2, XCircle, BarChart2, Trash2
-} from "lucide-react";
-import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer
-} from "recharts";
+import { ShieldCheck, User2, Trash2, Stethoscope, User } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
 function AdminPage() {
   const navigate = useNavigate();
   const [doctors, setDoctors] = useState([]);
-  const [users, setUsers] = useState([]);
-  const [predictions, setPredictions] = useState([]);
+  const [patients, setPatients] = useState([]);
+  const [pendingDoctors, setPendingDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterText, setFilterText] = useState("");
-  const [stats, setStats] = useState({ users: 0, doctors: 0, patients: 0, pending: 0, approved: 0, rejected: 0 });
+  const [stats, setStats] = useState({
+    users: 0,
+    doctors: 0,
+    patients: 0,
+    pending: 0,
+    approved: 0,
+    rejected: 0,
+  });
+  const [selectedPatientId, setSelectedPatientId] = useState(null);
+  const [patientPredictions, setPatientPredictions] = useState([]);
+  const [loadingPatientPreds, setLoadingPatientPreds] = useState(false);
+  const [expandedIds, setExpandedIds] = useState([]);
 
   useEffect(() => {
     const isAdmin = localStorage.getItem("isAdminLoggedIn");
@@ -28,42 +34,104 @@ function AdminPage() {
     try {
       const token = localStorage.getItem("token");
       const headers = { Authorization: `Bearer ${token}` };
-
-      const [statsRes, usersRes, doctorsRes, predictionsRes] = await Promise.all([
+      const [statsRes, usersRes] = await Promise.all([
         axios.get("http://localhost:5000/api/admin/stats", { headers }),
         axios.get("http://localhost:5000/api/admin/users", { headers }),
-        axios.get("http://localhost:5000/api/admin/doctors", { headers }),
-        axios.get("http://localhost:5000/api/admin/predictions", { headers })
       ]);
-
       setStats(statsRes.data);
-      setUsers(usersRes.data);
-      setDoctors(doctorsRes.data);
-      setPredictions(predictionsRes.data);
-    } catch (err) {
-      console.error("Error fetching admin data", err);
+      const allUsers = usersRes.data;
+      setDoctors(allUsers.filter((u) => u.role === "doctor" && u.doctorApproved));
+      setPatients(allUsers.filter((u) => u.role === "patient"));
+    } catch {
+      setStats({ users: 0, doctors: 0, patients: 0, pending: 0, approved: 0, rejected: 0 });
+      setDoctors([]);
+      setPatients([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const deleteUser = async (id) => {
-    const confirm = window.confirm("Delete this user permanently?");
-    if (!confirm) return;
+  const fetchPendingDoctors = async () => {
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`http://localhost:5000/api/admin/users/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      fetchData();
-    } catch (err) {
-      console.error("Failed to delete user", err);
+      const headers = { Authorization: `Bearer ${token}` };
+      const res = await axios.get("http://localhost:5000/api/admin/pending-doctors", { headers });
+      setPendingDoctors(res.data);
+    } catch {
+      setPendingDoctors([]);
     }
   };
 
   useEffect(() => {
     fetchData();
+    fetchPendingDoctors();
   }, []);
+
+  const approveDoctor = async (id) => {
+    try {
+      const token = localStorage.getItem("token");
+      const headers = { Authorization: `Bearer ${token}` };
+      await axios.post(`http://localhost:5000/api/admin/approve-doctor/${id}`, {}, { headers });
+      await fetchPendingDoctors();
+      await fetchData();
+    } catch (err) {
+      console.error("Failed to approve doctor", err);
+    }
+  };
+
+  const rejectDoctor = async (id) => {
+    if (!window.confirm("Reject and remove this doctor?")) return;
+    try {
+      const token = localStorage.getItem("token");
+      const headers = { Authorization: `Bearer ${token}` };
+      await axios.delete(`http://localhost:5000/api/admin/reject-doctor/${id}`, { headers });
+      await fetchPendingDoctors();
+    } catch (err) {
+      console.error("Failed to reject doctor", err);
+    }
+  };
+
+  const openPatientPredictions = async (patientId) => {
+    setSelectedPatientId(patientId);
+    setLoadingPatientPreds(true);
+    setExpandedIds([]);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(
+        `http://localhost:5000/api/admin/predictions?clientId=${patientId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setPatientPredictions(res.data);
+    } catch {
+      setPatientPredictions([]);
+    } finally {
+      setLoadingPatientPreds(false);
+    }
+  };
+
+  const closePatientPredictions = () => {
+    setSelectedPatientId(null);
+    setPatientPredictions([]);
+    setExpandedIds([]);
+  };
+
+  const deleteUser = async (id) => {
+    if (!window.confirm("Delete this user permanently?")) return;
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`http://localhost:5000/api/admin/users/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      await fetchData();
+      await fetchPendingDoctors();
+    } catch {}
+  };
+
+  const toggleExpanded = (id) => {
+    setExpandedIds((prev) =>
+      prev.includes(id) ? prev.filter((eid) => eid !== id) : [...prev, id]
+    );
+  };
 
   const chartData = [
     { name: "Users", value: stats.users },
@@ -74,96 +142,261 @@ function AdminPage() {
     { name: "Rejected", value: stats.rejected },
   ];
 
-  const filteredUsers = users.filter(u => `${u.firstName} ${u.lastName} ${u.email}`.toLowerCase().includes(filterText.toLowerCase()));
+  const filteredDoctors = doctors.filter((d) =>
+    `${d.firstName} ${d.lastName} ${d.email}`.toLowerCase().includes(filterText.toLowerCase())
+  );
+  const filteredPatients = patients.filter((p) =>
+    `${p.firstName} ${p.lastName} ${p.email}`.toLowerCase().includes(filterText.toLowerCase())
+  );
+
+  const getColor = (p) => {
+    const percent = parseFloat(p) * 100;
+    if (percent < 30) return "text-green-600";
+    if (percent < 70) return "text-yellow-600";
+    return "text-red-600";
+  };
 
   return (
-    <div className="max-w-6xl mx-auto p-6 bg-white rounded-xl shadow mt-10">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-blue-700 flex items-center gap-2">
+    <div className="max-w-7xl mx-auto p-8 bg-white rounded-xl shadow mt-10">
+      <header className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold text-blue-700 flex items-center gap-3">
           <ShieldCheck className="w-6 h-6" /> Admin Panel
         </h1>
-      </div>
+      </header>
 
-      {/* Chart Section */}
-      <div className="mb-6 bg-slate-100 p-4 rounded-lg">
-        <h2 className="text-xl font-semibold mb-3 flex items-center gap-2">
-          <BarChart2 className="w-5 h-5 text-blue-600" /> Platform Stats
+      <section className="mb-10 bg-slate-100 p-6 rounded-lg shadow-inner">
+        <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+          <BarChart className="w-5 h-5 text-blue-600" /> Platform Statistics
         </h2>
-        <ResponsiveContainer width="100%" height={200}>
+        <ResponsiveContainer width="100%" height={220}>
           <BarChart data={chartData}>
-            <XAxis dataKey="name" />
+            <XAxis dataKey="name" tick={{ fontSize: 12 }} />
             <YAxis />
             <Tooltip />
             <Bar dataKey="value" fill="#2563eb" radius={[8, 8, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
-      </div>
+      </section>
 
-      {/* Filter */}
-      <input
-        type="text"
-        placeholder="Search users by name or email"
-        value={filterText}
-        onChange={(e) => setFilterText(e.target.value)}
-        className="mb-4 w-full border px-4 py-2 rounded"
-      />
-
-      {/* Users */}
-      <h2 className="text-xl font-bold text-blue-700 mb-2">All Users</h2>
-      <ul className="space-y-2 mb-6">
-        {filteredUsers.map((u) => (
-          <li key={u._id} className="flex justify-between items-center bg-gray-100 p-3 rounded-md">
-            <div>
-              <p className="font-semibold">{u.firstName} {u.lastName}</p>
-              <p className="text-sm text-gray-500">{u.email}</p>
-            </div>
-            <button
-              onClick={() => deleteUser(u._id)}
-              className="text-sm text-red-600 hover:underline"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
-          </li>
-        ))}
-      </ul>
-
-      {/* Doctors */}
-      <h2 className="text-xl font-bold text-blue-700 mb-2">Approved Doctors</h2>
-      <ul className="space-y-2 mb-6">
-        {doctors.map((d) => (
-          <li key={d._id} className="flex justify-between items-center bg-green-50 p-3 rounded-md">
-            <div>
-              <p className="font-semibold">Dr. {d.firstName} {d.lastName}</p>
-              <p className="text-sm text-gray-500">{d.email}</p>
-            </div>
-          </li>
-        ))}
-      </ul>
-
-      {/* Predictions */}
-      <h2 className="text-xl font-bold text-blue-700 mb-2">Predictions</h2>
-      <div className="overflow-auto">
-        <table className="min-w-full border text-sm">
-          <thead className="bg-slate-100">
-            <tr>
-              <th className="p-2 text-left">Patient</th>
-              <th className="p-2 text-left">Doctor</th>
-              <th className="p-2 text-left">Status</th>
-              <th className="p-2 text-left">Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {predictions.map((p) => (
-              <tr key={p._id} className="border-t">
-                <td className="p-2">{p.patientName}</td>
-                <td className="p-2">{p.doctorName || "-"}</td>
-                <td className="p-2 text-blue-600 font-semibold">{p.status}</td>
-                <td className="p-2">{new Date(p.createdAt).toLocaleDateString()}</td>
-              </tr>
+      <section className="mb-10">
+        <h2 className="text-2xl font-semibold text-red-600 mb-4 flex items-center gap-2">
+          Pending Doctor Approvals ({pendingDoctors.length})
+        </h2>
+        {pendingDoctors.length === 0 ? (
+          <p className="text-gray-500">No pending doctors.</p>
+        ) : (
+          <ul className="divide-y divide-gray-200 rounded border border-gray-200 shadow-sm">
+            {pendingDoctors.map((doc) => (
+              <li
+                key={doc._id}
+                className="flex justify-between items-center p-4 hover:bg-gray-50"
+              >
+                <div>
+                  <p className="font-semibold">Dr. {doc.firstName} {doc.lastName}</p>
+                  <p className="text-sm text-gray-600">{doc.email}</p>
+                </div>
+                <div className="flex gap-4">
+                  <button
+                    onClick={() => approveDoctor(doc._id)}
+                    className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
+                  >
+                    Approve
+                  </button>
+                  <button
+                    onClick={() => rejectDoctor(doc._id)}
+                    className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
+                  >
+                    Reject
+                  </button>
+                </div>
+              </li>
             ))}
-          </tbody>
-        </table>
-      </div>
+          </ul>
+        )}
+      </section>
+
+      <section className="mb-10">
+        <h2 className="text-2xl font-semibold text-blue-700 mb-4 flex items-center gap-2">
+          <User2 className="w-6 h-6" />
+          Approved Doctors ({filteredDoctors.length})
+        </h2>
+        {filteredDoctors.length === 0 ? (
+          <p className="text-gray-500">No doctors found.</p>
+        ) : (
+          <ul className="divide-y divide-gray-200 rounded border border-gray-200 shadow-sm">
+            {filteredDoctors.map((doc) => (
+              <li
+                key={doc._id}
+                className="flex justify-between items-center p-4 hover:bg-gray-50"
+              >
+                <div>
+                  <p className="font-semibold">
+                    Dr. {doc.firstName} {doc.lastName}
+                  </p>
+                  <p className="text-sm text-gray-600">{doc.email}</p>
+                </div>
+                <button
+                  onClick={() => deleteUser(doc._id)}
+                  aria-label={`Delete doctor ${doc.firstName} ${doc.lastName}`}
+                  className="text-red-600 hover:text-red-800"
+                >
+                  <Trash2 className="w-5 h-5" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section className="mb-10">
+        <h2 className="text-2xl font-semibold text-blue-700 mb-4 flex items-center gap-2">
+          <User className="w-6 h-6" />
+          Registered Patients ({filteredPatients.length})
+        </h2>
+        {filteredPatients.length === 0 ? (
+          <p className="text-gray-500">No patients found.</p>
+        ) : (
+          <ul className="divide-y divide-gray-200 rounded border border-gray-200 shadow-sm">
+            {filteredPatients.map((pat) => (
+              <li
+                key={pat._id}
+                className="flex justify-between items-center p-4 hover:bg-gray-50"
+              >
+                <div>
+                  <p className="font-semibold">
+                    <button
+                      onClick={() => openPatientPredictions(pat._id)}
+                      className="text-blue-600 hover:underline cursor-pointer bg-transparent border-none p-0"
+                      aria-label={`Show predictions for ${pat.firstName} ${pat.lastName}`}
+                    >
+                      {pat.firstName} {pat.lastName}
+                    </button>
+                  </p>
+                  <p className="text-sm text-gray-600">{pat.email}</p>
+                </div>
+                <button
+                  onClick={() => deleteUser(pat._id)}
+                  aria-label={`Delete patient ${pat.firstName} ${pat.lastName}`}
+                  className="text-red-600 hover:text-red-800"
+                >
+                  <Trash2 className="w-5 h-5" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      {selectedPatientId && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
+          onClick={closePatientPredictions}
+        >
+          <div
+            className="bg-white rounded-lg shadow-lg max-w-4xl w-full max-h-[80vh] overflow-y-auto p-8"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={closePatientPredictions}
+              aria-label="Close patient predictions"
+              className="mb-6 text-red-600 hover:text-red-800 font-semibold text-lg"
+            >
+              Close ×
+            </button>
+
+            <h3 className="text-2xl font-bold mb-6">
+              Predictions history for patient:{" "}
+              {patients.find((p) => p._id === selectedPatientId)
+                ? `${patients.find((p) => p._id === selectedPatientId).firstName} ${patients.find((p) => p._id === selectedPatientId).lastName}`
+                : selectedPatientId}
+            </h3>
+
+            {loadingPatientPreds ? (
+              <p>Loading...</p>
+            ) : patientPredictions.length === 0 ? (
+              <p>No predictions found for this patient.</p>
+            ) : (
+              <ul className="space-y-4">
+                {patientPredictions.map((pred, idx) => {
+                  const id = pred._id || idx;
+                  const riskPercent = (pred.prediction * 100).toFixed(2);
+                  const riskColor =
+                    riskPercent < 30
+                      ? "text-green-600"
+                      : riskPercent < 70
+                      ? "text-yellow-600"
+                      : "text-red-600";
+                  const isExpanded = expandedIds.includes(id);
+
+                  const dateStr = pred.createdAt || pred.timestamp || null;
+                  const dateFormatted = dateStr ? new Date(dateStr).toLocaleString() : "N/A";
+
+                  return (
+                    <li
+                      key={id}
+                      className="bg-gray-50 rounded-xl shadow-md p-5 cursor-pointer select-none"
+                    >
+                      <div
+                        onClick={() => toggleExpanded(id)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") toggleExpanded(id);
+                        }}
+                        tabIndex={0}
+                        role="button"
+                        aria-expanded={isExpanded}
+                        aria-controls={`prediction-details-${id}`}
+                        className="flex justify-between items-center font-semibold"
+                      >
+                        <span className="flex items-center gap-2">
+                          <Stethoscope className="inline w-6 h-6 text-pink-600" />
+                          Risk Score:{" "}
+                          <span className={`${riskColor} font-bold`}>{riskPercent}%</span>
+                        </span>
+                        <span className="text-xl font-bold">{isExpanded ? "▲" : "▼"}</span>
+                      </div>
+                      <div
+                        id={`prediction-details-${id}`}
+                        className={`collapse-content mt-3 text-gray-700 text-sm ${
+                          isExpanded ? "open" : ""
+                        }`}
+                      >
+                        <p>
+                          <strong>Date:</strong> {dateFormatted}
+                        </p>
+                        <p>
+                          <strong>Status:</strong>{" "}
+                          {pred.status
+                            ? pred.status.charAt(0).toUpperCase() + pred.status.slice(1)
+                            : "N/A"}
+                        </p>
+                        {pred.feedback && (
+                          <p>
+                            <strong>Doctor's Feedback:</strong> {pred.feedback}
+                          </p>
+                        )}
+                        {pred.medicalInputs && (
+                          <>
+                            <p className="mt-2 font-semibold">Medical Inputs:</p>
+                            <ul className="list-disc list-inside ml-5">
+                              {Object.entries(pred.medicalInputs).map(([key, value]) => (
+                                <li key={key}>
+                                  <strong>{key}:</strong> {String(value)}
+                                </li>
+                              ))}
+                            </ul>
+                          </>
+                        )}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

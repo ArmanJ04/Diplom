@@ -48,7 +48,6 @@ app.use("/api/doctor", doctorRoutes);
 app.use("/api", doctorRoutes); // Correct
 app.use("/api/chat", chatRoutes);
 
-
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

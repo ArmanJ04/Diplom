@@ -14,6 +14,7 @@ import BrowseClients from "./pages/BrowseClients";
 import ConnectionRequests from "./pages/ConnectionRequests";
 import DoctorProfile from "./pages/DoctorProfile";
 import ChatWidget from "./components/ChatWidget";
+import ResetPassword from './pages/ResetPassword';
 import "./styles/styles.css";
 import toast, { Toaster } from "react-hot-toast";
 import AdminPage from "./pages/AdminPage";
@@ -47,8 +48,13 @@ function App() {
   return (
     <div className="app-container">
       <Navbar />
-      <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
-      <div className="content">
+<Toaster
+  position="top-right"
+  toastOptions={{
+    duration: 3000,
+    style: { zIndex: 11000, marginTop: '80px' } // adjust marginTop to navbar height
+  }}
+/>      <div className="content">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <Login />} />
@@ -62,6 +68,7 @@ function App() {
           <Route path="/doctor/clients" element={<BrowseClients />} />
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/connection-requests" element={<ConnectionRequests />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
         </Routes>
       </div>
         <ChatWidget />  {/* ✅ Global Chat Popup */}
