@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const User = require("../models/User");
-const Prediction = require("../models/Prediction"); // Required for stats
+const Prediction = require("../models/Prediction");
 
 // GET: All doctors who are not approved
 router.get("/pending-doctors", async (req, res) => {
@@ -37,7 +37,47 @@ router.delete("/reject-doctor/:id", async (req, res) => {
   }
 });
 
-// GET: Admin dashboard stats
+// ✅ GET: All users
+router.get("/users", async (req, res) => {
+  try {
+    const users = await User.find();
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// ✅ GET: Approved doctors
+router.get("/doctors", async (req, res) => {
+  try {
+    const doctors = await User.find({ role: "doctor", doctorApproved: true });
+    res.json(doctors);
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// ✅ GET: All predictions
+router.get("/predictions", async (req, res) => {
+  try {
+    const predictions = await Prediction.find();
+    res.json(predictions);
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// ✅ DELETE: User by ID
+router.delete("/users/:id", async (req, res) => {
+  try {
+    await User.findByIdAndDelete(req.params.id);
+    res.status(200).json({ message: "User deleted" });
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// ✅ GET: Admin dashboard stats
 router.get("/stats", async (req, res) => {
   try {
     const users = await User.countDocuments();
@@ -53,8 +93,8 @@ router.get("/stats", async (req, res) => {
       doctors,
       patients,
       pending,
-      predictionsApproved,
-      predictionsRejected,
+      approved: predictionsApproved,
+      rejected: predictionsRejected,
     });
   } catch (err) {
     res.status(500).json({ message: "Server error" });
