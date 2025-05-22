@@ -12,6 +12,15 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // 🔐 Специальная проверка для админа
+    if (uin === "admin" && password === "password123") {
+      localStorage.setItem("isAdminLoggedIn", "true");
+      navigate("/admin");
+      return;
+    }
+
+    // 👥 Обычный пользователь
     const loggedUser = await login(uin, password);
     if (loggedUser && loggedUser.role) {
       setUser(loggedUser);
@@ -22,7 +31,7 @@ function Login() {
   };
 
   return (
-<div className="page-background" style={{ minHeight: "100vh", padding: "60px 20px" }}>
+    <div className="page-background" style={{ minHeight: "100vh", padding: "60px 20px" }}>
       <div className="page-centered">
         <h2>Login to CardioCare</h2>
         <form onSubmit={handleSubmit} className="space-y-8">
