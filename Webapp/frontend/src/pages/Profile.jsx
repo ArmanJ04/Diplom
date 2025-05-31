@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 import {
   UserCircle2,
   CalendarDays,
@@ -340,7 +342,7 @@ function Profile() {
                   )}
                   {entry.status && (
                     <p>
-                      <strong>Prediction Status:</strong> {entry.status}
+                      <strong>Prediction Status:</strong> {entry.status} 
                     </p>
                   )}
                   <p>
@@ -352,6 +354,14 @@ function Profile() {
                         <strong>{key}:</strong> {String(value)}
                       </li>
                     ))}
+                    <button
+  onClick={() => exportPredictionToPDF(id)}
+  className="btn-outline"
+  style={{ marginTop: "16px", padding: "10px 16px", borderRadius: "10px", fontSize: "0.95rem" }}
+>
+  Export as PDF
+</button>
+
                   </ul>
                 </div>
               )}
@@ -392,5 +402,15 @@ const InfoCard = ({ icon, label, value }) => (
     </div>
   </article>
 );
+const exportPredictionToPDF = async (entryId) => {
+  const element = document.getElementById(`prediction-details-${entryId}`);
+  if (!element) return;
+
+  const canvas = await html2canvas(element);
+  const imgData = canvas.toDataURL("image/png");
+  const pdf = new jsPDF();
+  pdf.addImage(imgData, "PNG", 10, 10, 190, 0); // fit to page width
+  pdf.save(`prediction-${entryId}.pdf`);
+};
 
 export default Profile;

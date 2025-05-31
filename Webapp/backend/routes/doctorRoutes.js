@@ -2,7 +2,9 @@ const express = require("express");
 const router = express.Router();
 const doctorController = require("../controllers/doctorController");
 const authMiddleware = require("../middleware/authMiddleware");
-
+const roleMiddleware = require("../middleware/roleMiddleware");
+const User = require("../models/User");
+const Prediction = require("../models/Prediction");
 router.use(authMiddleware);
 
 // Doctor access to clients
@@ -24,5 +26,25 @@ router.get("/prediction/pending-requests", doctorController.getPendingRequestsFo
 router.get("/prediction/accepted-connections", doctorController.getAcceptedConnectionsForClient);
 router.post("/prediction/respond-request/:requestId", doctorController.respondToConnectionRequest);
 router.post("/prediction/disconnect-request/:requestId", doctorController.disconnectRequest);
+
+router.get("/dashboard-stats", authMiddleware, roleMiddleware("doctor"), async (req, res) => {
+  const doctorId = req.user._id;
+
+const patients = await User.find({ assignedDoctor: doctorId, role: "patient" });
+  const patientUINs = patients.map((p) => p.uin);
+
+  const pending = await Prediction.countDocuments({ doctorId, status: "pending" });
+  const approved = await Prediction.countDocuments({ doctorId, status: "approved" });
+
+  res.json({
+    stats: {
+      patientCount: patients.length,
+      pendingPredictions: pending,
+      approvedPredictions: approved,
+    },
+    patients,
+  });
+});
+
 
 module.exports = router;

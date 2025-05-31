@@ -18,6 +18,7 @@ import ResetPassword from './pages/ResetPassword';
 import "./styles/styles.css";
 import toast, { Toaster } from "react-hot-toast";
 import AdminPage from "./pages/AdminPage";
+import DoctorDashboard from "./pages/DoctorDashboard";
 
 
 function App() {
@@ -56,9 +57,8 @@ function App() {
   }}
 />      <div className="content">
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <Login />} />
-          <Route path="/signup" element={user ? <Navigate to="/dashboard" /> : <Signup />} />
+          <Route path="/" element={<Home />} />       
+<Route  path="/login" element={   user     ? user.role === "doctor"       ? <Navigate to="/doctor/dashboard" />       : <Navigate to="/dashboard" />     : <Login /> }/>          <Route path="/signup" element={user ? <Navigate to="/dashboard" /> : <Signup />} />
           <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/login" />} />
           <Route path="/prediction" element={user ? <Prediction /> : <Navigate to="/login" />} />
           <Route path="/profile" element={user ? <Profile /> : <Navigate to="/login" />} />
@@ -69,6 +69,7 @@ function App() {
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/connection-requests" element={<ConnectionRequests />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
+          <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
         </Routes>
       </div>
         <ChatWidget />  {/* ✅ Global Chat Popup */}

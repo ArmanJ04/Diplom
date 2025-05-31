@@ -1,6 +1,7 @@
 const User = require("../models/User");
 const Prediction = require("../models/Prediction");
 const ConnectionRequest = require("../models/ConnectionRequest");
+const { sendNotification } = require("../controllers/authController"); // Make sure sendNotification is async exported
 
 exports.getPendingRequestsForClient = async (req, res) => {
   try {

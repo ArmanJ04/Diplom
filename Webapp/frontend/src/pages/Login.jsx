@@ -16,7 +16,7 @@ const handleSubmit = async (e) => {
   setLoading(true);
 
   try {
-    if (uin === "admin" && password === "password123") {
+    if (uin === "123456789012" && password === "admin123") {
       localStorage.setItem("isAdminLoggedIn", "true");
       toast.success("Admin logged in");
       navigate("/admin");
@@ -28,7 +28,7 @@ const handleSubmit = async (e) => {
     if (loggedUser && loggedUser.role) {
       setUser(loggedUser);
       toast.success("Login successful!");
-      navigate(loggedUser.role === "doctor" ? "/doctor/profile" : "/dashboard");
+      navigate(loggedUser.role === "doctor" ? "/doctor/dashboard" : "/dashboard");
     } else {
       toast.error("Login failed.");
     }

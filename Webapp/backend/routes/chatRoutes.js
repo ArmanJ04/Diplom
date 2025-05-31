@@ -2,10 +2,26 @@ const express = require("express");
 const router = express.Router();
 const ChatMessage = require("../models/ChatMessage");
 const authMiddleware = require("../middleware/authMiddleware");
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
 
 router.use(authMiddleware);
 
-// ✅ Get all messages between two users
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const dir = "./uploads/chat";
+    fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+    const unique = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, unique + path.extname(file.originalname));
+  },
+});
+
+const upload = multer({ storage });
+
 router.get("/:otherUserId", async (req, res) => {
   const userId = req.user.userId;
   const { otherUserId } = req.params;
@@ -14,8 +30,8 @@ router.get("/:otherUserId", async (req, res) => {
     const messages = await ChatMessage.find({
       $or: [
         { senderId: userId, receiverId: otherUserId },
-        { senderId: otherUserId, receiverId: userId }
-      ]
+        { senderId: otherUserId, receiverId: userId },
+      ],
     }).sort({ timestamp: 1 });
 
     res.json(messages);
@@ -25,13 +41,12 @@ router.get("/:otherUserId", async (req, res) => {
   }
 });
 
-// ✅ Send a new message
-router.post("/", async (req, res) => {
+router.post("/", upload.single("file"), async (req, res) => {
   const senderId = req.user.userId;
   const { receiverId, message } = req.body;
 
-  if (!receiverId || !message) {
-    return res.status(400).json({ message: "receiverId and message are required" });
+  if (!receiverId && !message && !req.file) {
+    return res.status(400).json({ message: "receiverId or message or file is required" });
   }
 
   try {
@@ -40,7 +55,8 @@ router.post("/", async (req, res) => {
       receiverId,
       message,
       read: false,
-      timestamp: new Date()
+      timestamp: new Date(),
+      fileUrl: req.file ? `/uploads/chat/${req.file.filename}` : null,
     });
 
     await newMessage.save();
@@ -51,7 +67,6 @@ router.post("/", async (req, res) => {
   }
 });
 
-// ✅ Mark messages as read
 router.put("/:otherUserId/read", async (req, res) => {
   const userId = req.user.userId;
   const { otherUserId } = req.params;

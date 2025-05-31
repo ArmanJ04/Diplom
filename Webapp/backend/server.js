@@ -10,6 +10,7 @@ const adminRoutes = require("./routes/adminRoutes");
 const doctorRoutes = require("./routes/doctorRoutes");
 const chatRoutes = require("./routes/chatRoutes");
 const app = express();
+const path = require("path");
 
 app.use(cors({
   origin: "http://localhost:5173", // Replace with your frontend URL
@@ -47,6 +48,8 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/doctor", doctorRoutes);
 app.use("/api", doctorRoutes); // Correct
 app.use("/api/chat", chatRoutes);
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

@@ -226,6 +226,7 @@ const sendNotification = async (recipientEmail, subject, message) => {
   }
 };
 
+exports.sendNotification = sendNotification;
 
 exports.confirmPrediction = async (req, res) => {
   const { clientId, predictionId } = req.body;
