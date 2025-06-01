@@ -4,6 +4,7 @@
     "bootstrap": "^5.3.3",
     "cohere-ai": "^7.17.1",
     "express-rate-limit": "^7.5.0",
+    "express-validator": "^7.2.1",
     "helmet": "^8.1.0",
     "html2canvas": "^1.4.1",
     "i18next": "^25.2.1",

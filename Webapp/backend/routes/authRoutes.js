@@ -4,8 +4,9 @@ const {
   register,
   requestPasswordReset,
   resetPassword,
-  login,           // ✅ добавлено
-  checkAuth        // ✅ добавлено
+  login,        
+  checkAuth, 
+   logout     
 } = require("../controllers/authController");
 const authMiddleware = require("../middleware/authMiddleware");
 
@@ -16,7 +17,7 @@ router.post("/request-password-reset", requestPasswordReset);
 router.post("/reset-password/:token", resetPassword);
 router.post("/login", login);
 router.get("/check-auth", authMiddleware, checkAuth);
-
+router.post("/logout", logout);
 router.put("/update", authMiddleware, async (req, res) => {
   try {
     const userId = req.user.userId; // ✅ userId not id

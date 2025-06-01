@@ -34,11 +34,6 @@ app.get("/", (req, res) => {
   res.send("API is running...");
 });
 
-// Logout Route
-app.post("/api/auth/logout", (req, res) => {
-  res.clearCookie("token"); 
-  res.status(200).json({ message: "Logged out successfully" });
-});
 
 // Attach Routes
 app.use("/api/auth", authRoutes);
