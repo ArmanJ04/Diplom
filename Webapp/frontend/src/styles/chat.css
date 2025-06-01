@@ -1,14 +1,13 @@
-/* Основное окно */
 .chat-popup {
   position: fixed;
-  bottom: 24px;
+  bottom: 70px;
   right: 24px;
   width: 320px;
   max-height: 80vh;
   background-color: var(--color-bg-alt);
   border-radius: 16px;
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
-  z-index: 1000;
+  z-index: 1100; 
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -18,7 +17,7 @@
   background-color: var(--color-bg);
 }
 
-/* Заголовок */
+/* Header */
 .chat-header {
   background-color: var(--color-primary);
   color: white;
@@ -52,7 +51,7 @@
   background-color: rgba(255, 255, 255, 0.1);
 }
 
-/* Сообщения */
+/* Messages */
 .chat-messages {
   flex: 1;
   overflow-y: auto;
@@ -77,13 +76,14 @@
   border-radius: 3px;
 }
 
-/* Пузырьки */
+/* Chat bubbles */
 .chat-bubble {
   position: relative;
   padding: 10px 14px;
   border-radius: 12px;
   max-width: 75%;
   word-break: break-word;
+  overflow-wrap: break-word;
   font-size: 0.95rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
@@ -114,7 +114,7 @@
   color: #f3f4f6;
 }
 
-/* Ввод и кнопка */
+/* Input and buttons */
 .chat-input {
   border-top: 1px solid #e5e7eb;
   background-color: #ffffff;
@@ -163,6 +163,7 @@
   cursor: pointer;
   color: white;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease;
 }
 
 .chat-input button:hover {
@@ -184,13 +185,14 @@
   z-index: 1050;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   transition: background-color 0.3s ease;
+  cursor: pointer;
 }
 
 .chat-toggle-btn:hover {
   background-color: var(--color-primary-dark);
 }
 
-/* Мобильный стиль */
+/* Mobile style */
 @media (max-width: 480px) {
   .chat-popup {
     width: 95vw;
@@ -214,4 +216,107 @@
     bottom: 16px;
     right: 16px;
   }
+}
+
+/* Selected file container */
+.selected-file-container {
+  display: flex;
+  align-items: center;
+  background: #f3f4f6;
+  padding: 4px 8px;
+  border-radius: 12px;
+  margin-left: 8px;
+  font-size: 0.85rem;
+  color: #374151;
+  max-width: 180px;
+  overflow: hidden;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.selected-file-name {
+  flex-shrink: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-right: 6px;
+  cursor: default;
+  position: relative;
+}
+
+/* Tooltip for file name */
+.selected-file-name:hover::after {
+  content: attr(title);
+  position: absolute;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-primary);
+  color: white;
+  padding: 6px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+  z-index: 10000;
+  font-size: 0.8rem;
+  opacity: 1;
+  pointer-events: none;
+}
+
+/* Remove file button */
+.remove-file-btn {
+  flex-shrink: 0;
+  background-color: var(--color-primary);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white !important;
+  transition: background-color 0.3s ease;
+  width: 28px;
+  height: 28px;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.5);
+  user-select: none;
+}
+
+.remove-file-btn:hover {
+  background-color: var(--color-primary-dark);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.7);
+}
+
+.remove-file-btn svg {
+  width: 18px;
+  height: 18px;
+  color: white !important;
+}
+
+/* File upload label */
+.file-upload-label {
+  cursor: pointer;
+  font-size: 28px;
+  font-weight: bold;
+  width: 36px;
+  height: 36px;
+  background: var(--color-primary);
+  color: white;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 36px;
+  margin-left: 8px;
+  user-select: none;
+  transition: background-color 0.3s ease;
+}
+
+.file-upload-label:hover {
+  background: var(--color-primary-dark);
+}
+.chat-date-separator {
+  text-align: center;
+  margin: 12px 0;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  user-select: none;
 }

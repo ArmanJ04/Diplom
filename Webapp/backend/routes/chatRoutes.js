@@ -4,24 +4,27 @@ const ChatMessage = require("../models/ChatMessage");
 const authMiddleware = require("../middleware/authMiddleware");
 const multer = require("multer");
 const path = require("path");
-const fs = require("fs");
+
+// Multer storage config to preserve file extensions
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/");
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, file.fieldname + "-" + uniqueSuffix + ext);
+  }
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 } // 10 MB limit
+});
 
 router.use(authMiddleware);
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const dir = "./uploads/chat";
-    fs.mkdirSync(dir, { recursive: true });
-    cb(null, dir);
-  },
-  filename: (req, file, cb) => {
-    const unique = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, unique + path.extname(file.originalname));
-  },
-});
-
-const upload = multer({ storage });
-
+// Get all chat messages between two users
 router.get("/:otherUserId", async (req, res) => {
   const userId = req.user.userId;
   const { otherUserId } = req.params;
@@ -41,25 +44,50 @@ router.get("/:otherUserId", async (req, res) => {
   }
 });
 
-router.post("/", upload.single("file"), async (req, res) => {
+// Post new chat message with optional file upload
+router.post("/", (req, res, next) => {
+  upload.single("file")(req, res, (err) => {
+    if (err) {
+      console.error("Multer error:", err);
+      return res.status(400).json({ message: err.message });
+    }
+    next();
+  });
+}, async (req, res) => {
   const senderId = req.user.userId;
   const { receiverId, message } = req.body;
+  const file = req.file;
 
-  if (!receiverId && !message && !req.file) {
-    return res.status(400).json({ message: "receiverId or message or file is required" });
+  if (!receiverId) {
+    return res.status(400).json({ message: "Receiver is required." });
+  }
+
+  if (!message && !file) {
+    return res.status(400).json({ message: "Message or file is required." });
   }
 
   try {
-    const newMessage = new ChatMessage({
+    const newMessageData = {
       senderId,
       receiverId,
-      message,
+      message: message || "",
       read: false,
       timestamp: new Date(),
-      fileUrl: req.file ? `/uploads/chat/${req.file.filename}` : null,
-    });
+    };
 
+    if (file) {
+      newMessageData.file = {
+        filename: file.filename,
+        originalname: file.originalname,
+        mimetype: file.mimetype,
+        size: file.size,
+        path: file.path,
+      };
+    }
+
+    const newMessage = new ChatMessage(newMessageData);
     await newMessage.save();
+
     res.status(201).json(newMessage);
   } catch (error) {
     console.error("Error saving chat message:", error);
@@ -67,6 +95,7 @@ router.post("/", upload.single("file"), async (req, res) => {
   }
 });
 
+// Mark messages from other user as read
 router.put("/:otherUserId/read", async (req, res) => {
   const userId = req.user.userId;
   const { otherUserId } = req.params;
