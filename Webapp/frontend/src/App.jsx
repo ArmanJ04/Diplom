@@ -1,6 +1,6 @@
 import { useAuth } from "./context/AuthContext";
 import { useEffect, useRef } from "react";
-import { HashRouter as Routes, Route, Navigate } from "react-router-dom";
+import {Routes, Route, Navigate } from "react-router-dom";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
