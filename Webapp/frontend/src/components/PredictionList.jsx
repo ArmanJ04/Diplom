@@ -8,7 +8,7 @@ function PredictionList({ uin }) {
   useEffect(() => {
     const fetchPredictions = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/doctor/patients/${uin}/predictions`, { withCredentials: true });
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/doctor/patients/${uin}/predictions`, { withCredentials: true });
         setPredictions(res.data);
       } catch (error) {
         console.error("Failed to fetch predictions:", error);
@@ -22,7 +22,7 @@ function PredictionList({ uin }) {
 
   const handleApprove = async (predictionId) => {
     try {
-      await axios.put(`http://localhost:5000/api/doctor/patients/${uin}/predictions/${predictionId}/approve`, {}, { withCredentials: true });
+      await axios.put(`${import.meta.env.VITE_API_URL}/api/doctor/patients/${uin}/predictions/${predictionId}/approve`, {}, { withCredentials: true });
       setPredictions(predictions.map(prediction => 
         prediction._id === predictionId ? { ...prediction, status: "approved" } : prediction
       ));
@@ -33,7 +33,7 @@ function PredictionList({ uin }) {
 
   const handleCancel = async (predictionId) => {
     try {
-      await axios.put(`http://localhost:5000/api/doctor/patients/${uin}/predictions/${predictionId}/cancel`, {}, { withCredentials: true });
+      await axios.put(`${import.meta.env.VITE_API_URL}/api/doctor/patients/${uin}/predictions/${predictionId}/cancel`, {}, { withCredentials: true });
       setPredictions(predictions.map(prediction => 
         prediction._id === predictionId ? { ...prediction, status: "canceled" } : prediction
       ));
