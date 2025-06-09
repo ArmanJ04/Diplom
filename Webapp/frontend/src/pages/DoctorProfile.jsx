@@ -18,7 +18,7 @@ function DoctorProfile() {
   useEffect(() => {
     const fetchPatients = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/doctor/patients");
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/doctor/patients`);
         setPatients(Array.isArray(res.data) ? res.data : []);
       } catch {
         toast.error("Failed to load patients.");
@@ -38,7 +38,7 @@ function DoctorProfile() {
 
     try {
       const res = await axios.get(
-        `http://localhost:5000/api/doctor/patients/${uin}/predictions`
+        `${import.meta.env.VITE_API_URL}/api/doctor/patients/${uin}/predictions`
       );
       if (Array.isArray(res.data)) setPredictions(res.data);
       else {
@@ -60,7 +60,7 @@ function DoctorProfile() {
   const handleApprove = async (predictionId) => {
     try {
       await axios.put(
-        `http://localhost:5000/api/doctor/patients/${selectedPatient}/predictions/${predictionId}/validate`
+        `${import.meta.env.VITE_API_URL}/api/doctor/patients/${selectedPatient}/predictions/${predictionId}/validate`
       );
       setApprovedOrRejected(prev => ({ ...prev, [predictionId]: "approved" }));
       toast.success("Prediction approved.");
@@ -72,7 +72,7 @@ function DoctorProfile() {
   const handleReject = async (predictionId) => {
     try {
       await axios.put(
-        `http://localhost:5000/api/doctor/patients/${selectedPatient}/predictions/${predictionId}/reject`
+        `${import.meta.env.VITE_API_URL}/api/doctor/patients/${selectedPatient}/predictions/${predictionId}/reject`
       );
       setApprovedOrRejected(prev => ({ ...prev, [predictionId]: "rejected" }));
       toast.success("Prediction rejected.");
@@ -88,7 +88,7 @@ function DoctorProfile() {
     }
     try {
       await axios.post(
-        `http://localhost:5000/api/doctor/patients/${selectedPatient}/predictions/${predictionId}/feedback`,
+        `${import.meta.env.VITE_API_URL}/api/doctor/patients/${selectedPatient}/predictions/${predictionId}/feedback`,
         { feedback: feedbackMap[predictionId] }
       );
       setPredictions(prev =>

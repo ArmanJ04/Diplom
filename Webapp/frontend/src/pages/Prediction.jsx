@@ -92,7 +92,7 @@ const Prediction = () => {
         },
       };
 
-      const response = await fetch("http://localhost:5000/api/ai/predict", {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/ai/predict`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -110,7 +110,7 @@ const Prediction = () => {
 
       const data = await response.json();
 
-      const saveResponse = await fetch("http://localhost:5000/api/prediction/save", {
+      const saveResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/prediction/save`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

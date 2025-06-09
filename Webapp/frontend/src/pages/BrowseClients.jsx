@@ -10,7 +10,7 @@ function BrowseClients() {
   useEffect(() => {
     const fetchClients = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/doctor/browse-clients", { withCredentials: true });
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/doctor/browse-clients`, { withCredentials: true });
         setClients(Array.isArray(res.data) ? res.data : []);
       } catch {
         setClients([]);
@@ -19,7 +19,7 @@ function BrowseClients() {
 
     const fetchSentRequests = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/doctor/connection-requests/sent", { withCredentials: true });
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/doctor/connection-requests/sent`, { withCredentials: true });
         setSentRequests(Array.isArray(res.data) ? res.data.map(r => r.clientId) : []);
       } catch {
         setSentRequests([]);
@@ -32,7 +32,7 @@ function BrowseClients() {
 
   const handleConnect = async (clientId) => {
     try {
-      await axios.post(`http://localhost:5000/api/doctor/request-connection/${clientId}`, {}, { withCredentials: true });
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/doctor/request-connection/${clientId}`, {}, { withCredentials: true });
       setSentRequests(prev => [...prev, clientId]);
     } catch {
       // handle error silently or show toast

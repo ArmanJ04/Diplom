@@ -35,8 +35,8 @@ function AdminPage() {
       const token = localStorage.getItem("token");
       const headers = { Authorization: `Bearer ${token}` };
       const [statsRes, usersRes] = await Promise.all([
-        axios.get("http://localhost:5000/api/admin/stats", { headers }),
-        axios.get("http://localhost:5000/api/admin/users", { headers }),
+        axios.get(`${import.meta.env.VITE_API_URL}/api/admin/stats`, { headers }),
+        axios.get(`${import.meta.env.VITE_API_URL}/api/admin/users`, { headers }),
       ]);
       setStats(statsRes.data);
       const allUsers = usersRes.data;
@@ -55,7 +55,7 @@ function AdminPage() {
     try {
       const token = localStorage.getItem("token");
       const headers = { Authorization: `Bearer ${token}` };
-      const res = await axios.get("http://localhost:5000/api/admin/pending-doctors", { headers });
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/pending-doctors`, { headers });
       setPendingDoctors(res.data);
     } catch {
       setPendingDoctors([]);
@@ -71,7 +71,7 @@ function AdminPage() {
     try {
       const token = localStorage.getItem("token");
       const headers = { Authorization: `Bearer ${token}` };
-      await axios.post(`http://localhost:5000/api/admin/approve-doctor/${id}`, {}, { headers });
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/admin/approve-doctor/${id}`, {}, { headers });
       await fetchPendingDoctors();
       await fetchData();
     } catch (err) {
@@ -84,7 +84,7 @@ function AdminPage() {
     try {
       const token = localStorage.getItem("token");
       const headers = { Authorization: `Bearer ${token}` };
-      await axios.delete(`http://localhost:5000/api/admin/reject-doctor/${id}`, { headers });
+      await axios.delete(`${import.meta.env.VITE_API_URL}/api/admin/reject-doctor/${id}`, { headers });
       await fetchPendingDoctors();
     } catch (err) {
       console.error("Failed to reject doctor", err);
@@ -98,7 +98,7 @@ function AdminPage() {
     try {
       const token = localStorage.getItem("token");
       const res = await axios.get(
-        `http://localhost:5000/api/admin/predictions?clientId=${patientId}`,
+        `${import.meta.env.VITE_API_URL}/api/admin/predictions?clientId=${patientId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setPatientPredictions(res.data);
@@ -119,7 +119,7 @@ function AdminPage() {
     if (!window.confirm("Delete this user permanently?")) return;
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`http://localhost:5000/api/admin/users/${id}`, {
+      await axios.delete(`${import.meta.env.VITE_API_URL}/api/admin/users/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       await fetchData();

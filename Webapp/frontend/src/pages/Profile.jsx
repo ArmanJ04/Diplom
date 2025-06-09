@@ -64,7 +64,7 @@ function Profile() {
     }
     try {
       const response = await fetch(
-        `http://localhost:5000/api/prediction/history?uin=${uin}`,
+        `${import.meta.env.VITE_API_URL}/api/prediction/history?uin=${uin}`,
         {
           method: "GET",
           headers: { Authorization: `Bearer ${token}` },

@@ -10,8 +10,8 @@ function ConnectionRequests() {
   const fetchRequests = async () => {
     try {
       const [pendingRes, acceptedRes] = await Promise.all([
-        axios.get("http://localhost:5000/api/prediction/pending-requests", { withCredentials: true }),
-        axios.get("http://localhost:5000/api/prediction/accepted-connections", { withCredentials: true }),
+        axios.get(`${import.meta.env.VITE_API_URL}/api/prediction/pending-requests`, { withCredentials: true }),
+        axios.get(`${import.meta.env.VITE_API_URL}/api/prediction/accepted-connections`, { withCredentials: true }),
       ]);
       setPendingRequests(pendingRes.data);
       setAcceptedRequests(acceptedRes.data);
@@ -23,7 +23,7 @@ function ConnectionRequests() {
   const handleRespond = async (requestId, action) => {
     try {
       await axios.post(
-        `http://localhost:5000/api/prediction/respond-request/${requestId}`,
+        `${import.meta.env.VITE_API_URL}/api/prediction/respond-request/${requestId}`,
         { action },
         { withCredentials: true }
       );
@@ -37,7 +37,7 @@ function ConnectionRequests() {
   const handleDisconnect = async (requestId) => {
     try {
       await axios.post(
-        `http://localhost:5000/api/prediction/disconnect-request/${requestId}`,
+        `${import.meta.env.VITE_API_URL}/api/prediction/disconnect-request/${requestId}`,
         {},
         { withCredentials: true }
       );

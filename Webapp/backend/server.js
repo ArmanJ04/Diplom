@@ -14,11 +14,11 @@ const path = require("path");
 
 app.use(cors({
   origin: "http://localhost:5173", // Replace with your frontend URL
-  credentials: true, // Allow cookies
+  credentials: true,
 }));
 
 app.use(express.json());
-app.use(cookieParser()); // ✅ Enable cookie parsing
+app.use(cookieParser()); 
 
 const PORT = process.env.PORT || 5000;
 
