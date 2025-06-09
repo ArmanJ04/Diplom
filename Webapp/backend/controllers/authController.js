@@ -176,7 +176,7 @@ exports.requestPasswordReset = async (req, res) => {
 
     const resetToken = jwt.sign({ id: user._id }, RESET_SECRET, { expiresIn: '15m' });
 
-    const resetUrl = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
+    const resetUrl = `https://cardiohealth-client.onrender.com/reset-password/${resetToken}`;
 
     // Send reset email
     const mailOptions = {
