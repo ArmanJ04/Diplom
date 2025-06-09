@@ -21,7 +21,7 @@ function ResetPassword() {
 
     try {
       setLoading(true);
-      const res = await axios.post(`${import.meta.env.CLIENT_URL}/api/auth/reset-password/${token}`, { password });
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/reset-password/${token}`, { password });
       setMessage(res.data.message);
       setLoading(false);
       
