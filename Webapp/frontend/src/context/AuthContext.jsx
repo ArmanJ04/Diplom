@@ -38,7 +38,7 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuth = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/auth/check-auth", {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/auth/check-auth`, {
         withCredentials: true,
       });
       setUser(res.data.user);
@@ -54,7 +54,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (uin, password) => {
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/auth/login",
+        `${import.meta.env.VITE_API_URL}/api/auth/login`,
         { uin, password },
         { withCredentials: true }
       );
@@ -75,7 +75,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await axios.post("http://localhost:5000/api/auth/logout", {}, { withCredentials: true });
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/logout`, {}, { withCredentials: true });
       setUser(null);
       localStorage.removeItem("user");
       localStorage.removeItem("token");
@@ -84,7 +84,7 @@ export const AuthProvider = ({ children }) => {
 
   const updateUser = async (updatedData) => {
     try {
-      const res = await axios.put("http://localhost:5000/api/auth/update", updatedData, {
+      const res = await axios.put(`${import.meta.env.VITE_API_URL}/api/auth/update`, updatedData, {
         withCredentials: true,
       });
       const updatedUser = res.data.user;
@@ -98,7 +98,7 @@ export const AuthProvider = ({ children }) => {
 
   const signup = async (userData) => {
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/register", userData, {
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/register`, userData, {
         withCredentials: true,
       });
       const newUser = res.data.user;
