@@ -16,9 +16,8 @@ const chatRoutes = require("./routes/chatRoutes");
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// ✅ CORS — MUST be before everything else
 const corsOptions = {
-  origin: "https://cardiohealth-hbwy.onrender.com",
+  origin: process.env.CLIENT_URL,
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
