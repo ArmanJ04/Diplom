@@ -75,9 +75,12 @@ router.post("/save", async (req, res) => {
     if (isNaN(numericPrediction)) {
       return res.status(400).json({ error: "Prediction must be a valid number." });
     }
+const prompt = `
+You are a cardiologist assistant helping patients understand their cardiovascular risk scores.
 
-    const prompt = `A patient has a cardiovascular risk prediction score of ${numericPrediction}. 
-Their medical inputs are:
+A patient has received a cardiovascular risk prediction score of **${numericPrediction}**.
+
+The patient's medical inputs are:
 - Systolic BP: ${medicalInputs.systolicBP}
 - Diastolic BP: ${medicalInputs.diastolicBP}
 - Cholesterol: ${medicalInputs.cholesterol}
@@ -86,7 +89,12 @@ Their medical inputs are:
 - Alcohol intake: ${medicalInputs.alcoholIntake ? "Yes" : "No"}
 - Physical activity: ${medicalInputs.physicalActivity ? "Yes" : "No"}
 
-Please write a short, professional health feedback summary with recommendations for the patient.`;
+📋 Please generate a short, clear, professional feedback summary in a **doctor-like tone**:
+- Briefly interpret the risk score.
+- Suggest possible lifestyle or medical recommendations.
+- End with a disclaimer that this is an **AI-generated summary** and that the patient should **await feedback from a certified doctor**.
+`;
+
 
     const rawFeedback = await generateGPTFeedback(prompt);
 
