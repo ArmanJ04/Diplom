@@ -25,6 +25,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions)); // ✅ must come before routes or parsing
+app.options("*", cors(corsOptions)); // ✅ <-- add this line
 app.use(express.json());
 app.use(cookieParser());
 
