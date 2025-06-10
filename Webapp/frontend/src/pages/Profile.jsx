@@ -403,14 +403,52 @@ const InfoCard = ({ icon, label, value }) => (
   </article>
 );
 const exportPredictionToPDF = async (entryId) => {
-  const element = document.getElementById(`prediction-details-${entryId}`);
-  if (!element) return;
+  const originalElement = document.getElementById(`prediction-details-${entryId}`);
+  if (!originalElement) return;
 
-  const canvas = await html2canvas(element);
+  // Clone the content to avoid modifying the visible DOM
+  const clone = originalElement.cloneNode(true);
+
+  // Detect dark mode
+  const isDarkMode =
+    document.body.classList.contains("dark") ||
+    document.documentElement.classList.contains("dark");
+
+  // Apply export-specific styles
+  clone.style.backgroundColor = isDarkMode ? "#000000" : "#ffffff";
+  clone.style.color = isDarkMode ? "#ffffff" : "#000000";
+  clone.style.padding = "24px";
+  clone.style.borderRadius = "12px";
+  clone.style.width = originalElement.offsetWidth + "px";
+
+  // Ensure all children have readable colors
+  const allChildren = clone.querySelectorAll("*");
+  allChildren.forEach((el) => {
+    el.style.color = isDarkMode ? "#ffffff" : "#000000";
+    el.style.backgroundColor = "transparent";
+  });
+
+  // Append to DOM temporarily for rendering
+  clone.style.position = "fixed";
+  clone.style.top = "-9999px";
+  document.body.appendChild(clone);
+
+  // Render to canvas
+  const canvas = await html2canvas(clone, { scale: 2 }); // higher resolution
   const imgData = canvas.toDataURL("image/png");
+
+  // Generate PDF
   const pdf = new jsPDF();
-  pdf.addImage(imgData, "PNG", 10, 10, 190, 0); // fit to page width
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const imgProps = pdf.getImageProperties(imgData);
+  const pdfHeight = (imgProps.height * pageWidth) / imgProps.width;
+
+  pdf.addImage(imgData, "PNG", 10, 10, pageWidth - 20, pdfHeight);
   pdf.save(`prediction-${entryId}.pdf`);
+
+  // Clean up
+  document.body.removeChild(clone);
 };
+
 
 export default Profile;
