@@ -61,16 +61,8 @@ app.use("/api/chat", chatRoutes);
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/api/client", clientRoutes);
 
-// Serve static frontend
-app.use(express.static(path.join(__dirname, "frontend", "dist"))); // or "build"
-
-// Handle SPA routing (for React Router)
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "frontend", "dist", "index.html")); // or "build"
-});
 
 // ✅ Start Server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-
