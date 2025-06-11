@@ -115,6 +115,85 @@ function Profile() {
     if (percent < 70) return "text-yellow-600";
     return "text-red-600";
   };
+  const calculateAgeInYears = (birthdate) => {
+  const birth = new Date(birthdate);
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  const m = today.getMonth() - birth.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+  return age;
+};
+
+const calculateAgeInDays = (birthdate) => {
+  const birth = new Date(birthdate);
+  const today = new Date();
+  return Math.floor((today - birth) / (1000 * 60 * 60 * 24));
+};
+
+const exportPredictionToPDF = (entryId) => {
+  const entry = history.find((e, idx) => (e._id || idx) === entryId);
+  if (!entry) return;
+
+  const pdf = new jsPDF();
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+  const margin = 20;
+  const maxWidth = pageWidth - margin * 2;
+  let y = margin;
+
+  const addLabelBlock = (label, text, labelSize = 11, textSize = 11, spacing = 6) => {
+    if (y + spacing > pageHeight - margin) {
+      pdf.addPage();
+      y = margin;
+    }
+
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(labelSize);
+    pdf.text(label, margin, y);
+    y += spacing;
+
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(textSize);
+    const wrapped = pdf.splitTextToSize(text, maxWidth);
+    wrapped.forEach(line => {
+      if (y + spacing > pageHeight - margin) {
+        pdf.addPage();
+        y = margin;
+      }
+      pdf.text(line, margin, y);
+      y += spacing;
+    });
+    y += 2;
+  };
+
+  const addHeader = (text, size = 14, spacing = 9) => {
+    if (y + spacing > pageHeight - margin) {
+      pdf.addPage();
+      y = margin;
+    }
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(size);
+    pdf.text(text, margin, y);
+    y += spacing;
+  };
+
+  addHeader("Prediction Report");
+
+  addLabelBlock("Date:", new Date(entry.timestamp).toLocaleString());
+  addLabelBlock("Risk Score:", `${(entry.prediction * 100).toFixed(2)}%`);
+  if (entry.status) addLabelBlock("Prediction Status:", entry.status);
+  if (entry.feedback) addLabelBlock("Doctor's Feedback:", entry.feedback);
+
+  addHeader("Medical Inputs:", 12, 8);
+
+  Object.entries(entry.medicalInputs || {}).forEach(([key, value]) => {
+    addLabelBlock(`${key}:`, String(value), 10, 10, 5);
+  });
+
+  pdf.save(`prediction-${entryId}.pdf`);
+};
 
   const filteredHistory = history
     .filter((entry) =>
@@ -308,18 +387,20 @@ function Profile() {
                   <HeartPulse size={28} color="#ec4899" aria-hidden="true" />
                   <strong style={{ fontSize: "1.25rem" }}>
                     Risk Score:{" "}
-                    <span
-                      className={
-                        entry.prediction * 100 < 30
-                          ? "text-green-600"
-                          : entry.prediction * 100 < 70
-                          ? "text-yellow-600"
-                          : "text-red-600"
-                      }
-                      style={{ fontWeight: "700" }}
-                    >
-                      {(entry.prediction * 100).toFixed(2)}%
-                    </span>
+<span
+  style={{
+    fontWeight: "700",
+    color:
+      entry.prediction * 100 < 30
+        ? "#16a34a" // green-600
+        : entry.prediction * 100 < 70
+        ? "#ca8a04" // yellow-600
+        : "#dc2626", // red-600
+  }}
+>
+  {(entry.prediction * 100).toFixed(2)}%
+</span>
+
                   </strong>
                 </div>
                 <span style={{ fontSize: "1.5rem", fontWeight: "700" }}>
@@ -335,11 +416,20 @@ function Profile() {
                   <p>
                     <strong>Date:</strong> {new Date(entry.timestamp).toLocaleString()}
                   </p>
-                  {entry.feedback && (
-                    <p>
-                      <strong>Doctor's Feedback:</strong> {entry.feedback}
-                    </p>
-                  )}
+{entry.feedback && (
+  <p>
+    <strong>Doctor's Feedback:</strong>{" "}
+    <span
+      dangerouslySetInnerHTML={{
+        __html: entry.feedback.replace(
+          /(This is an AI-generated summary[^.]*\.)/gi,
+          (match) => `<strong>${match}</strong>`
+        ),
+      }}
+    />
+  </p>
+)}
+
                   {entry.status && (
                     <p>
                       <strong>Prediction Status:</strong> {entry.status} 
@@ -349,11 +439,21 @@ function Profile() {
                     <strong>Medical Inputs:</strong>
                   </p>
                   <ul style={{ paddingLeft: "20px", marginTop: "4px" }}>
-                    {Object.entries(entry.medicalInputs || {}).map(([key, value]) => (
-                      <li key={key}>
-                        <strong>{key}:</strong> {String(value)}
-                      </li>
-                    ))}
+                      {entry.medicalInputs.birthdate && (
+    <li>
+      <strong>Birthdate:</strong> {new Date(entry.medicalInputs.birthdate).toLocaleDateString()}<br />
+      <strong>Age:</strong> {calculateAgeInYears(entry.medicalInputs.birthdate)} years, {calculateAgeInDays(entry.medicalInputs.birthdate)} days
+    </li>
+  )}
+{Object.entries(entry.medicalInputs || {}).map(([key, value]) => {
+  if (key === "birthdate") return null;
+  return (
+    <li key={key}>
+      <strong>{key}:</strong> {String(value)}
+    </li>
+  );
+})}
+
                     <button
   onClick={() => exportPredictionToPDF(id)}
   className="btn-outline"
@@ -376,6 +476,7 @@ function Profile() {
       </div>
     </div>
   );
+  
 }
 
 const InfoCard = ({ icon, label, value }) => (
@@ -402,53 +503,6 @@ const InfoCard = ({ icon, label, value }) => (
     </div>
   </article>
 );
-const exportPredictionToPDF = async (entryId) => {
-  const originalElement = document.getElementById(`prediction-details-${entryId}`);
-  if (!originalElement) return;
-
-  // Clone the content to avoid modifying the visible DOM
-  const clone = originalElement.cloneNode(true);
-
-  // Detect dark mode
-  const isDarkMode =
-    document.body.classList.contains("dark") ||
-    document.documentElement.classList.contains("dark");
-
-  // Apply export-specific styles
-  clone.style.backgroundColor = isDarkMode ? "#000000" : "#ffffff";
-  clone.style.color = isDarkMode ? "#ffffff" : "#000000";
-  clone.style.padding = "24px";
-  clone.style.borderRadius = "12px";
-  clone.style.width = originalElement.offsetWidth + "px";
-
-  // Ensure all children have readable colors
-  const allChildren = clone.querySelectorAll("*");
-  allChildren.forEach((el) => {
-    el.style.color = isDarkMode ? "#ffffff" : "#000000";
-    el.style.backgroundColor = "transparent";
-  });
-
-  // Append to DOM temporarily for rendering
-  clone.style.position = "fixed";
-  clone.style.top = "-9999px";
-  document.body.appendChild(clone);
-
-  // Render to canvas
-  const canvas = await html2canvas(clone, { scale: 2 }); // higher resolution
-  const imgData = canvas.toDataURL("image/png");
-
-  // Generate PDF
-  const pdf = new jsPDF();
-  const pageWidth = pdf.internal.pageSize.getWidth();
-  const imgProps = pdf.getImageProperties(imgData);
-  const pdfHeight = (imgProps.height * pageWidth) / imgProps.width;
-
-  pdf.addImage(imgData, "PNG", 10, 10, pageWidth - 20, pdfHeight);
-  pdf.save(`prediction-${entryId}.pdf`);
-
-  // Clean up
-  document.body.removeChild(clone);
-};
 
 
 export default Profile;

@@ -51,27 +51,30 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const login = async (uin, password) => {
-    try {
-      const res = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/auth/login`,
-        { uin, password },
-        { withCredentials: true }
-      );
+const login = async (uin, password) => {
+  try {
+    const res = await axios.post(
+      `${import.meta.env.VITE_API_URL}/api/auth/login`,
+      { uin, password },
+      { withCredentials: true }
+    );
 
-      if (res.status === 200 && res.data.user) {
-        const userData = res.data.user;
-        setUser(userData);
-        localStorage.setItem("user", JSON.stringify(userData));
-        localStorage.setItem("token", res.data.token);
-        return userData;
-      } else {
-        return res.data.message || "Login failed.";
-      }
-    } catch (error) {
-      return error.response?.data?.message || "Invalid credentials. Please try again.";
+    if (res.status === 200 && res.data.user) {
+      const userData = res.data.user;
+      setUser(userData);
+      localStorage.setItem("user", JSON.stringify(userData));
+      localStorage.setItem("token", res.data.token);
+      return userData;
+    } else {
+      throw new Error(res.data.message || "Login failed.");
     }
-  };
+  } catch (error) {
+    throw new Error(
+      error.response?.data?.message || "Invalid credentials. Please try again."
+    );
+  }
+};
+
 
   const logout = async () => {
     try {

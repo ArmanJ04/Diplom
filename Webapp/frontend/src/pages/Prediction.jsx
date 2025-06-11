@@ -81,15 +81,20 @@ const Prediction = () => {
           inputData.alcoholIntake ? 1 : 0,
           inputData.physicalActivity ? 1 : 0,
         ],
-        medicalInputs: {
-          systolicBP: inputData.systolicBP,
-          diastolicBP: inputData.diastolicBP,
-          cholesterol: inputData.cholesterol,
-          glucose: inputData.glucose,
-          smoking: inputData.smoking,
-          alcoholIntake: inputData.alcoholIntake,
-          physicalActivity: inputData.physicalActivity,
-        },
+medicalInputs: {
+  birthdate: inputData.birthdate,
+  gender: inputData.gender,
+  height: inputData.height,
+  weight: inputData.weight,
+  systolicBP: inputData.systolicBP,
+  diastolicBP: inputData.diastolicBP,
+  cholesterol: inputData.cholesterol,
+  glucose: inputData.glucose,
+  smoking: inputData.smoking,
+  alcoholIntake: inputData.alcoholIntake,
+  physicalActivity: inputData.physicalActivity,
+}
+
       };
 
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/ai/predict`, {
@@ -136,7 +141,12 @@ const Prediction = () => {
       const fb = typeof saveData.data.feedback === "string"
         ? saveData.data.feedback
         : saveData.data.feedback?.content || "No feedback available";
-      setFeedback(fb);
+const boldedFeedback = fb.replace(
+  /(This is an AI-generated summary[^.]*\.)/gi,
+  (match) => `<strong>${match}</strong>`
+);
+
+setFeedback(boldedFeedback);
     } catch (error) {
       setResult({ error: error.message });
     } finally {
@@ -223,7 +233,7 @@ const Prediction = () => {
               value={inputData.systolicBP}
               onChange={handleChange}
               min="50"
-              max="250"
+              max="300"
               placeholder="e.g. 120"
               required
             />
@@ -237,7 +247,7 @@ const Prediction = () => {
               value={inputData.diastolicBP}
               onChange={handleChange}
               min="30"
-              max="150"
+              max="300"
               placeholder="e.g. 80"
               required
             />
@@ -254,10 +264,10 @@ const Prediction = () => {
               onChange={handleChange}
               required
             >
-              <option value="" disabled>Select Cholesterol Level</option>
-              <option value="1">Normal</option>
-              <option value="2">Above Normal</option>
-              <option value="3">Well Above Normal</option>
+<option value="" disabled>Select Cholesterol Level</option>
+  <option value="1">Normal — less than 200 mg/dL</option>
+  <option value="2">Above Normal — 200–239 mg/dL</option>
+  <option value="3">Well Above Normal — 240+ mg/dL</option>
             </select>
           </div>
           <div style={{ flex: "1 1 200px" }}>
@@ -269,10 +279,10 @@ const Prediction = () => {
               onChange={handleChange}
               required
             >
-              <option value="" disabled>Select Glucose Level</option>
-              <option value="1">Normal</option>
-              <option value="2">Above Normal</option>
-              <option value="3">Well Above Normal</option>
+  <option value="" disabled>Select Glucose Level</option>
+  <option value="1">Normal — less than 100 mg/dL (fasting)</option>
+  <option value="2">Above Normal — 100–125 mg/dL (pre-diabetes)</option>
+  <option value="3">Well Above Normal — 126+ mg/dL (possible diabetes)</option>
             </select>
           </div>
         </div>
@@ -340,7 +350,7 @@ const Prediction = () => {
           }}
         >
           <h4 style={{ fontWeight: "700", marginBottom: "12px" }}>Health Feedback</h4>
-          <p>{feedback}</p>
+<p dangerouslySetInnerHTML={{ __html: feedback }} />
         </section>
       )}
     </div>

@@ -33,8 +33,13 @@ const handleSubmit = async (e) => {
       toast.error("Login failed.");
     }
   } catch (error) {
-    const msg = error.response?.data?.message || "Login failed. Please check your credentials.";
-    toast.error(msg);
+const msg =
+  (error.response &&
+    (error.response.data?.message || error.response.data?.error)) ||
+  error.message ||
+  "Login failed. Please check your credentials.";
+toast.error(msg);
+
   } finally {
     setLoading(false);
   }

@@ -26,13 +26,13 @@ function Navbar() {
   return (
     <nav className="navbar" style={{ animation: "fadeIn 0.8s ease" }}>
       <div className="navbar-left">
-        <Link to="/" className="navbar-link" aria-label="Home">
-          Home
-        </Link>
         {user && user.role === "doctor" && (
           <>
-            <Link to="/doctor/profile" className="navbar-link">
+                      <Link to="/doctor/dashboard" className="navbar-link">
               Dashboard
+            </Link>
+            <Link to="/doctor/profile" className="navbar-link">
+              Clients
             </Link>
             <Link to="/doctor/clients" className="navbar-link">
               Browse Clients
@@ -41,6 +41,9 @@ function Navbar() {
         )}
         {user && user.role !== "doctor" && (
           <>
+                  <Link to="/" className="navbar-link" aria-label="Home">
+          Home
+        </Link>
             <Link to="/dashboard" className="navbar-link">
               Dashboard
             </Link>
