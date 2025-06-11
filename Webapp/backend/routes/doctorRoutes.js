@@ -23,10 +23,10 @@ router.post("/disconnect-request/:id", doctorController.disconnectRequest);
 
 // Client-side connection actions (authenticated patient)
 router.get("/prediction/pending-requests", doctorController.getPendingRequestsForClient);
-router.get("/prediction/accepted-connections", doctorController.getAcceptedConnectionsForClient);
 router.post("/prediction/respond-request/:requestId", doctorController.respondToConnectionRequest);
 router.post("/prediction/disconnect-request/:requestId", doctorController.disconnectRequest);
-
+router.post("/respond-client-request/:requestId", doctorController.respondToIncomingRequest);
+router.get("/client-requests", doctorController.getClientInitiatedRequests);
 router.get("/dashboard-stats", authMiddleware, roleMiddleware("doctor"), async (req, res) => {
   const doctorId = req.user._id;
 

@@ -1,6 +1,16 @@
 const User = require("../models/User");
 const ConnectionRequest = require("../models/ConnectionRequest");
 const mongoose = require('mongoose');
+exports.browseDoctors = async (req, res) => {
+  try {
+    const doctors = await User.find({ role: "doctor" })
+      .select("firstName lastName email uin specialty");
+    res.json(doctors);
+  } catch (error) {
+    console.error("Error browsing doctors:", error);
+    res.status(500).json({ message: "Server error." });
+  }
+};
 
 exports.getPendingConnectionRequests = async (req, res) => {
   try {
@@ -124,6 +134,21 @@ exports.rejectConnectionRequest = async (req, res) => {
     res.status(500).json({ message: "Server error while rejecting request." });
   }
 };
+// clientController.js
+exports.getAcceptedConnectionsForClient = async (req, res) => {
+  try {
+    const clientId = req.user.userId;
+    const acceptedConnections = await ConnectionRequest.find({
+      clientId,
+      status: { $in: ["client_accepted", "doctor_accepted"] } // 🔥 fix
+    }).populate("doctorId", "firstName lastName email uin");
+
+    res.json(acceptedConnections || []);
+  } catch (error) {
+    console.error("Error fetching accepted connections:", error);
+    res.status(500).json({ message: "Server error." });
+  }
+};
 
 exports.getAssignedDoctor = async (req, res) => {
     try {
@@ -157,12 +182,6 @@ exports.disconnectDoctor = async (req, res) => {
 
         client.assignedDoctorId = null;
         await client.save({ session });
-
-        // Update the status of the connection request that led to this assignment (if desired)
-        // For example, mark it as 'client_disconnected' or similar.
-        // This step depends on how you want to track the history of connections.
-        // For simplicity, we'll just clear the assignment here.
-        // Example:
         await ConnectionRequest.findOneAndUpdate(
             { doctorId, clientId, status: 'client_accepted' },
             { $set: { status: 'client_disconnected', responseTimestamp: new Date() } }, // You might need a new status 'client_disconnected'
@@ -171,7 +190,6 @@ exports.disconnectDoctor = async (req, res) => {
 
 
         await session.commitTransaction();
-        // TODO: Notify the doctor that the client has disconnected.
         res.json({ message: "Successfully disconnected from the doctor." });
     } catch (error) {
         await session.abortTransaction();
@@ -180,4 +198,45 @@ exports.disconnectDoctor = async (req, res) => {
     } finally {
         session.endSession();
     }
+};
+exports.clientRequestConnection = async (req, res) => {
+  const clientId = req.user.userId;
+  const { doctorId } = req.params;
+
+  try {
+    const existing = await ConnectionRequest.findOne({
+      doctorId,
+      clientId,
+      status: 'pending_doctor_approval'
+    });
+
+    if (existing) return res.status(400).json({ message: "Request already sent." });
+
+    const newRequest = new ConnectionRequest({
+      doctorId,
+      clientId,
+      status: 'pending_doctor_approval',
+      initiatedBy: 'client'
+    });
+
+    await newRequest.save();
+    res.json({ message: "Connection request sent to doctor." });
+  } catch (error) {
+    console.error("Client request error:", error);
+    res.status(500).json({ message: "Server error." });
+  }
+};
+exports.getClientSentRequests = async (req, res) => {
+  const clientId = req.user.userId;
+  try {
+    const sentRequests = await ConnectionRequest.find({
+      clientId,
+      status: 'pending_doctor_approval',
+      initiatedBy: 'client'
+    }).select("doctorId");
+    res.json(sentRequests);
+  } catch (error) {
+    console.error("Error fetching sent requests:", error);
+    res.status(500).json({ message: "Server error." });
+  }
 };

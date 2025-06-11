@@ -1,41 +1,76 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { UserPlus, CheckCircle2 } from "lucide-react";
+import toast from "react-hot-toast";
+import { UserPlus, CheckCircle2, XCircle } from "lucide-react";
 
 function BrowseClients() {
   const [clients, setClients] = useState([]);
   const [sentRequests, setSentRequests] = useState([]);
+  const [incomingRequests, setIncomingRequests] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    const fetchClients = async () => {
-      try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/doctor/browse-clients`, { withCredentials: true });
-        setClients(Array.isArray(res.data) ? res.data : []);
-      } catch {
-        setClients([]);
-      }
-    };
-
-    const fetchSentRequests = async () => {
-      try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/doctor/connection-requests/sent`, { withCredentials: true });
-        setSentRequests(Array.isArray(res.data) ? res.data.map(r => r.clientId) : []);
-      } catch {
-        setSentRequests([]);
-      }
-    };
-
     fetchClients();
     fetchSentRequests();
+    fetchIncomingRequests();
   }, []);
+
+  const fetchClients = async () => {
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/doctor/browse-clients`, {
+        withCredentials: true
+      });
+      setClients(res.data || []);
+    } catch {
+      setClients([]);
+    }
+  };
+
+  const fetchSentRequests = async () => {
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/doctor/connection-requests/sent`, {
+        withCredentials: true
+      });
+      setSentRequests(res.data.map(r => r.clientId));
+    } catch {
+      setSentRequests([]);
+    }
+  };
+
+  const fetchIncomingRequests = async () => {
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/doctor/client-requests`, {
+        withCredentials: true
+      });
+      setIncomingRequests(res.data || []);
+    } catch {
+      toast.error("Failed to load incoming requests");
+    }
+  };
 
   const handleConnect = async (clientId) => {
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL}/api/doctor/request-connection/${clientId}`, {}, { withCredentials: true });
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/doctor/request-connection/${clientId}`, {}, {
+        withCredentials: true
+      });
+      toast.success("Request sent");
       setSentRequests(prev => [...prev, clientId]);
     } catch {
-      // handle error silently or show toast
+      toast.error("Failed to send request");
+    }
+  };
+
+  const handleRespond = async (requestId, action) => {
+    try {
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/doctor/respond-client-request/${requestId}`, {
+        action
+      }, {
+        withCredentials: true
+      });
+      toast.success(`Request ${action}ed`);
+      fetchIncomingRequests();
+    } catch {
+      toast.error("Failed to respond");
     }
   };
 
@@ -55,6 +90,39 @@ function BrowseClients() {
         className="mb-6 p-4 rounded-lg border border-gray-300"
       />
 
+      {/* 🔔 Incoming Client Requests */}
+      {incomingRequests.length > 0 && (
+        <>
+          <h2 className="text-xl font-semibold mb-4">Incoming Requests from Clients</h2>
+          <ul className="space-y-5 mb-10">
+            {incomingRequests.map(req => (
+              <li key={req._id} className="p-6 border rounded-lg shadow bg-white">
+                <div>
+                  <p className="font-semibold">{req.clientId.firstName} {req.clientId.lastName}</p>
+                  <p className="text-sm text-gray-500">UIN: {req.clientId.uin}</p>
+                  <p className="text-sm text-gray-500">Email: {req.clientId.email}</p>
+                </div>
+                <div className="flex gap-3 mt-4">
+                  <button
+                    onClick={() => handleRespond(req._id, "accept")}
+                    className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                  >
+                    Accept
+                  </button>
+                  <button
+                    onClick={() => handleRespond(req._id, "reject")}
+                    className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                  >
+                    Reject
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+
+      {/* 📋 Unassigned Clients */}
       {filteredClients.length === 0 ? (
         <p>No matching clients found.</p>
       ) : (
@@ -89,4 +157,4 @@ function BrowseClients() {
   );
 }
 
-export default BrowseClients;  
+export default BrowseClients;

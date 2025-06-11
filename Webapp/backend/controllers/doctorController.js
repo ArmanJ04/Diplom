@@ -2,6 +2,35 @@ const User = require("../models/User");
 const Prediction = require("../models/Prediction");
 const ConnectionRequest = require("../models/ConnectionRequest");
 const { sendNotification } = require("../controllers/authController"); // Make sure sendNotification is async exported
+exports.respondToIncomingRequest = async (req, res) => {
+  const doctorId = req.user.userId;
+  const { requestId } = req.params;
+  const { action } = req.body;
+
+  if (!['accept', 'reject'].includes(action)) {
+    return res.status(400).json({ message: "Invalid action." });
+  }
+
+  try {
+    const request = await ConnectionRequest.findById(requestId);
+    if (!request || request.doctorId.toString() !== doctorId || request.status !== 'pending_doctor_approval') {
+      return res.status(403).json({ message: "Not authorized or invalid request." });
+    }
+
+    request.status = action === 'accept' ? 'doctor_accepted' : 'doctor_rejected';
+    request.responseTimestamp = new Date();
+    await request.save();
+
+    if (action === 'accept') {
+      await User.findByIdAndUpdate(request.clientId, { assignedDoctorId: doctorId });
+    }
+
+    res.json({ message: `Request ${action}ed successfully.` });
+  } catch (err) {
+    console.error("Respond error:", err);
+    res.status(500).json({ message: "Server error." });
+  }
+};
 
 exports.getPendingRequestsForClient = async (req, res) => {
   try {
@@ -21,23 +50,7 @@ exports.getPendingRequestsForClient = async (req, res) => {
   }
 };
 
-exports.getAcceptedConnectionsForClient = async (req, res) => {
-  try {
-    if (!req.user || req.user.role !== "patient") {
-      return res.status(403).json({ message: "Forbidden." });
-    }
-    const clientId = req.user.userId;
-    const acceptedConnections = await ConnectionRequest.find({
-      clientId,
-      status: "client_accepted"
-    }).populate("doctorId", "firstName lastName email uin");
 
-    res.json(acceptedConnections || []);
-  } catch (error) {
-    console.error("Error fetching accepted connections:", error);
-    res.status(500).json({ message: "Server error." });
-  }
-};
 
 exports.respondToConnectionRequest = async (req, res) => {
   const { requestId } = req.params;
@@ -247,12 +260,31 @@ exports.requestConnection = async (req, res) => {
 
     if (existing) return res.status(400).json({ message: "Request already sent." });
 
-    const request = new ConnectionRequest({ doctorId, clientId });
+const request = new ConnectionRequest({
+  doctorId,
+  clientId,
+  initiatedBy: "doctor", 
+  status: "pending_client_approval" 
+});
     await request.save();
 
     res.json({ message: "Request sent." });
   } catch (error) {
     console.error("Request connection error:", error);
+    res.status(500).json({ message: "Server error." });
+  }
+};
+exports.getClientInitiatedRequests = async (req, res) => {
+  const doctorId = req.user.userId;
+  try {
+    const requests = await ConnectionRequest.find({
+      doctorId,
+      status: 'pending_doctor_approval',
+      initiatedBy: 'client'
+    }).populate('clientId', 'firstName lastName email uin');
+    res.json(requests);
+  } catch (error) {
+    console.error("Error fetching client requests:", error);
     res.status(500).json({ message: "Server error." });
   }
 };

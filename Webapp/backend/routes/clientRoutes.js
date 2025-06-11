@@ -5,22 +5,15 @@ const authMiddleware = require("../middleware/authMiddleware");
 const checkRole = require("../middleware/roleMiddleware");
 
 router.use(authMiddleware);
-router.use(checkRole(['patient'])); // All routes here are for clients
-
-// GET /api/client/connection-requests - Get pending connection requests for the logged-in client
+router.use(checkRole(['patient'])); 
 router.get("/connection-requests", clientController.getPendingConnectionRequests);
-
-// PUT /api/client/connection-requests/:requestId/accept - Client accepts a doctor's request
 router.put("/connection-requests/:requestId/accept", clientController.acceptConnectionRequest);
-
-// PUT /api/client/connection-requests/:requestId/reject - Client rejects a doctor's request
 router.put("/connection-requests/:requestId/reject", clientController.rejectConnectionRequest);
-
-// GET /api/client/assigned-doctor - Get details of the currently assigned doctor
 router.get("/assigned-doctor", clientController.getAssignedDoctor);
-
-// DELETE /api/client/disconnect-doctor - Client disconnects from their assigned doctor
 router.delete("/disconnect-doctor", clientController.disconnectDoctor);
-
+router.get("/browse-doctors", clientController.browseDoctors);
+router.get("/sent-requests", clientController.getClientSentRequests);
+router.post("/request-connection/:doctorId", clientController.clientRequestConnection);
+router.get("/prediction/accepted-connections", clientController.getAcceptedConnectionsForClient);
 
 module.exports = router;

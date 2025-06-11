@@ -12,6 +12,7 @@ const predictionRoutes = require("./routes/predictionRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const doctorRoutes = require("./routes/doctorRoutes");
 const chatRoutes = require("./routes/chatRoutes");
+const clientRoutes = require("./routes/clientRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -50,6 +51,8 @@ app.use("/api/doctor", doctorRoutes);
 app.use("/api", doctorRoutes); // optional
 app.use("/api/chat", chatRoutes);
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/api/client", clientRoutes);
+
 
 // ✅ Start Server
 app.listen(PORT, () => {
