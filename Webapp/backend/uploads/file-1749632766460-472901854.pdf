@@ -1,0 +1,532 @@
+%PDF-1.3
+%ºß¬à
+3 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 4 0 R
+>>
+endobj
+4 0 obj
+<<
+/Length 4194
+>>
+stream
+0.5670000000000001 w
+0 G
+BT
+/F2 14 Tf
+16.0999999999999979 TL
+0 g
+56.6929133858267775 785.1970866141732586 Td
+(Prediction Report) Tj
+ET
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0 g
+56.6929133858267775 759.6852755905511003 Td
+(Date:) Tj
+ET
+BT
+/F1 11 Tf
+12.6499999999999986 TL
+0 g
+56.6929133858267775 742.6774015748030706 Td
+(11/06/2025, 12:59:01) Tj
+ET
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0 g
+56.6929133858267775 720.0002362204724022 Td
+(Risk Score:) Tj
+ET
+BT
+/F1 11 Tf
+12.6499999999999986 TL
+0 g
+56.6929133858267775 702.9923622047243725 Td
+(3.84%) Tj
+ET
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0 g
+56.6929133858267775 680.3151968503937042 Td
+(Prediction Status:) Tj
+ET
+BT
+/F1 11 Tf
+12.6499999999999986 TL
+0 g
+56.6929133858267775 663.3073228346456744 Td
+(pending) Tj
+ET
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0 g
+56.6929133858267775 640.6301574803148924 Td
+(Doctor's Feedback:) Tj
+ET
+BT
+/F1 11 Tf
+12.6499999999999986 TL
+0 g
+56.6929133858267775 623.6222834645668627 Td
+(Based on the cardiovascular risk prediction score of 0.038376327604055405, your risk of) Tj
+ET
+BT
+/F1 11 Tf
+12.6499999999999986 TL
+0 g
+56.6929133858267775 606.614409448818833 Td
+(developing cardiovascular disease is relatively low. However, it is important to note that this score) Tj
+ET
+BT
+/F1 11 Tf
+12.6499999999999986 TL
+0 g
+56.6929133858267775 589.6065354330708033 Td
+(is just one aspect of your overall health.) Tj
+ET
+BT
+/F1 11 Tf
+12.6499999999999986 TL
+0 g
+56.6929133858267775 555.5907874015747439 Td
+(Considering your medical inputs, it is recommended that you continue to monitor your blood) Tj
+ET
+BT
+/F1 11 Tf
+12.6499999999999986 TL
+0 g
+56.6929133858267775 538.5829133858267141 Td
+(pressure, cholesterol, and glucose levels. Additionally, quitting smoking, reducing alcohol intake,) Tj
+ET
+BT
+/F1 11 Tf
+12.6499999999999986 TL
+0 g
+56.6929133858267775 521.5750393700786844 Td
+(and incorporating physical activity into your routine can further reduce your risk of cardiovascular) Tj
+ET
+BT
+/F1 11 Tf
+12.6499999999999986 TL
+0 g
+56.6929133858267775 504.5671653543306547 Td
+(issues.) Tj
+ET
+BT
+/F1 11 Tf
+12.6499999999999986 TL
+0 g
+56.6929133858267775 470.5514173228345953 Td
+(Please keep in mind that this is an AI-generated summary and it is important to consult with a) Tj
+ET
+BT
+/F1 11 Tf
+12.6499999999999986 TL
+0 g
+56.6929133858267775 453.5435433070865656 Td
+(certified doctor for personalized recommendations and further evaluation.) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0 g
+56.6929133858267775 430.8663779527558404 Td
+(Medical Inputs:) Tj
+ET
+BT
+/F2 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 408.1892125984251152 Td
+(birthdate:) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 394.0159842519684616 Td
+(2000-07-15) Tj
+ET
+BT
+/F2 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 374.1734645669290558 Td
+(gender:) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 360.0002362204724022 Td
+(male) Tj
+ET
+BT
+/F2 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 340.1577165354329964 Td
+(height:) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 325.9844881889763428 Td
+(170) Tj
+ET
+BT
+/F2 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 306.1419685039369369 Td
+(weight:) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 291.9687401574802834 Td
+(90) Tj
+ET
+BT
+/F2 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 272.1262204724408775 Td
+(systolicBP:) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 257.952992125984224 Td
+(120) Tj
+ET
+BT
+/F2 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 238.1104724409448181 Td
+(diastolicBP:) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 223.9372440944881646 Td
+(70) Tj
+ET
+BT
+/F2 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 204.0947244094487587 Td
+(cholesterol:) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 189.9214960629919915 Td
+(1) Tj
+ET
+BT
+/F2 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 170.0789763779526993 Td
+(glucose:) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 155.9057480314959321 Td
+(1) Tj
+ET
+BT
+/F2 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 136.0632283464566399 Td
+(smoking:) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 121.8899999999998727 Td
+(true) Tj
+ET
+BT
+/F2 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 102.0474803149605805 Td
+(alcoholIntake:) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 87.8742519685038133 Td
+(true) Tj
+ET
+endstream
+endobj
+5 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 6 0 R
+>>
+endobj
+6 0 obj
+<<
+/Length 202
+>>
+stream
+0.5670000000000001 w
+0 G
+BT
+/F2 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 785.1970866141732586 Td
+(physicalActivity:) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0 g
+56.6929133858267775 771.0238582677164914 Td
+(false) Tj
+ET
+endstream
+endobj
+1 0 obj
+<</Type /Pages
+/Kids [3 0 R 5 0 R ]
+/Count 2
+>>
+endobj
+7 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+8 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+9 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-Oblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+10 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-BoldOblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+11 0 obj
+<<
+/Type /Font
+/BaseFont /Courier
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+12 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+13 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-Oblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+14 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-BoldOblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+15 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Roman
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+16 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+17 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Italic
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+18 0 obj
+<<
+/Type /Font
+/BaseFont /Times-BoldItalic
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+19 0 obj
+<<
+/Type /Font
+/BaseFont /ZapfDingbats
+/Subtype /Type1
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+20 0 obj
+<<
+/Type /Font
+/BaseFont /Symbol
+/Subtype /Type1
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+2 0 obj
+<<
+/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]
+/Font <<
+/F1 7 0 R
+/F2 8 0 R
+/F3 9 0 R
+/F4 10 0 R
+/F5 11 0 R
+/F6 12 0 R
+/F7 13 0 R
+/F8 14 0 R
+/F9 15 0 R
+/F10 16 0 R
+/F11 17 0 R
+/F12 18 0 R
+/F13 19 0 R
+/F14 20 0 R
+>>
+/XObject <<
+>>
+>>
+endobj
+21 0 obj
+<<
+/Producer (jsPDF 3.0.1)
+/CreationDate (D:20250611130031+05'00')
+>>
+endobj
+22 0 obj
+<<
+/Type /Catalog
+/Pages 1 0 R
+/OpenAction [3 0 R /FitH null]
+/PageLayout /OneColumn
+>>
+endobj
+xref
+0 23
+0000000000 65535 f 
+0000004788 00000 n 
+0000006613 00000 n 
+0000000015 00000 n 
+0000000152 00000 n 
+0000004398 00000 n 
+0000004535 00000 n 
+0000004851 00000 n 
+0000004976 00000 n 
+0000005106 00000 n 
+0000005239 00000 n 
+0000005377 00000 n 
+0000005501 00000 n 
+0000005630 00000 n 
+0000005762 00000 n 
+0000005898 00000 n 
+0000006026 00000 n 
+0000006153 00000 n 
+0000006282 00000 n 
+0000006415 00000 n 
+0000006517 00000 n 
+0000006863 00000 n 
+0000006949 00000 n 
+trailer
+<<
+/Size 23
+/Root 22 0 R
+/Info 21 0 R
+/ID [ <B238D26F688DAECBE538B767F76334A8> <B238D26F688DAECBE538B767F76334A8> ]
+>>
+startxref
+7053
+%%EOF

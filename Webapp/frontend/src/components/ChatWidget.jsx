@@ -171,64 +171,71 @@ function ChatWidget() {
             </div>
           )}
 
-          <div ref={scrollRef} className="chat-messages" tabIndex={0} aria-live="polite">
-            {messages.map((msg, i) => {
-              const isMe = msg.senderId === user._id;
-              const messageDate = new Date(msg.timestamp || msg.createdAt);
-              const time = messageDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-              const currentDateStr = formatDate(messageDate);
+<div ref={scrollRef} className="chat-messages" tabIndex={0} aria-live="polite">
+  {messages.length === 0 ? (
+    <div className="no-messages" style={{ textAlign: "center", padding: "1rem", color: "#888" }}>
+      Нет сообщений
+    </div>
+  ) : (
+    messages.map((msg, i) => {
+      const isMe = msg.senderId === user._id;
+      const messageDate = new Date(msg.timestamp || msg.createdAt);
+      const time = messageDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      const currentDateStr = formatDate(messageDate);
 
-              let showDateSeparator = false;
-              if (i === 0) {
-                showDateSeparator = true;
-              } else {
-                const prevMessageDate = new Date(messages[i - 1].timestamp || messages[i - 1].createdAt);
-                const prevDateStr = formatDate(prevMessageDate);
-                if (currentDateStr !== prevDateStr) {
-                  showDateSeparator = true;
-                }
-              }
+      let showDateSeparator = false;
+      if (i === 0) {
+        showDateSeparator = true;
+      } else {
+        const prevMessageDate = new Date(messages[i - 1].timestamp || messages[i - 1].createdAt);
+        const prevDateStr = formatDate(prevMessageDate);
+        if (currentDateStr !== prevDateStr) {
+          showDateSeparator = true;
+        }
+      }
 
-              return (
-                <div key={msg._id || i}>
-                  {showDateSeparator && (
-                    <div className="chat-date-separator" aria-label={`Date: ${currentDateStr}`}>
-                      <span>{currentDateStr}</span>
-                    </div>
-                  )}
-                  <div className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
-                    <div className={`chat-bubble ${isMe ? "you" : "other"}`}>
-                      {msg.message && <p>{msg.message}</p>}
-                      {msg.file && (
-                        <p>
-                          <a
-                            href={`${API_BASE_URL.replace("/api", "")}/uploads/${msg.file.filename}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="chat-file-link"
-                          >
-                            📎 {msg.file.originalname}
-                          </a>
-                        </p>
-                      )}
-                      <div className="flex justify-between items-center text-xs text-gray-400 mt-1">
-                        <span>{time}</span>
-                        {isMe && (
-                          <span className="text-white ml-2">
-                            {msg.read ? (
-                              <CheckCheck className="inline w-4 h-4" />
-                            ) : (
-                              <Check className="inline w-4 h-4" />
-                            )}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+      return (
+        <div key={msg._id || i}>
+          {showDateSeparator && (
+            <div className="chat-date-separator" aria-label={`Date: ${currentDateStr}`}>
+              <span>{currentDateStr}</span>
+            </div>
+          )}
+          <div className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
+            <div className={`chat-bubble ${isMe ? "you" : "other"}`}>
+              {msg.message && <p>{msg.message}</p>}
+              {msg.file && (
+                <p>
+                  <a
+                    href={`${API_BASE_URL.replace("/api", "")}/uploads/${msg.file.filename}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="chat-file-link"
+                  >
+                    📎 {msg.file.originalname}
+                  </a>
+                </p>
+              )}
+              <div className="flex justify-between items-center text-xs text-gray-400 mt-1">
+                <span>{time}</span>
+                {isMe && (
+                  <span className="text-white ml-2">
+                    {msg.read ? (
+                      <CheckCheck className="inline w-4 h-4" />
+                    ) : (
+                      <Check className="inline w-4 h-4" />
+                    )}
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
+        </div>
+      );
+    })
+  )}
+</div>
+
 
           <div className="chat-input" style={{ display: "flex", alignItems: "center" }}>
             <input
