@@ -170,15 +170,16 @@ function DoctorProfile() {
                       </span>
                       <h3 className="font-semibold text-gray-700 mb-3 mt-4">Medical Inputs</h3>
                       <ul className="text-sm text-gray-600 space-y-2">
-                        <li><strong>Systolic BP:</strong> {pred.medicalInputs.systolicBP}</li>
-                        <li><strong>Diastolic BP:</strong> {pred.medicalInputs.diastolicBP}</li>
-                        <li><strong>Cholesterol:</strong> {pred.medicalInputs.cholesterol}</li>
-                        <li><strong>Glucose:</strong> {pred.medicalInputs.glucose}</li>
-                        <li><strong>Smoking:</strong> {pred.medicalInputs.smoking ? "Yes" : "No"}</li>
-                        <li><strong>Alcohol Intake:</strong> {pred.medicalInputs.alcoholIntake ? "Yes" : "No"}</li>
-                        <li><strong>Physical Activity:</strong> {pred.medicalInputs.physicalActivity} hrs/week</li>
-                      </ul>
-
+  <li><strong>Birthdate:</strong> {new Date(pred.medicalInputs.birthdate).toLocaleDateString()}</li>
+  <li><strong>Gender:</strong> {pred.medicalInputs.gender}</li>
+  <li><strong>Height:</strong> {pred.medicalInputs.height} cm</li>
+  <li><strong>Weight:</strong> {pred.medicalInputs.weight} kg</li>
+  <li><strong>Blood Pressure:</strong> {pred.medicalInputs.bloodPressure}</li>
+  <li><strong>Glucose:</strong> {pred.medicalInputs.glucose}</li>
+  <li><strong>Smoking:</strong> {pred.medicalInputs.smoking ? "Yes" : "No"}</li>
+  <li><strong>Alcohol:</strong> {pred.medicalInputs.alcohol ? "Yes" : "No"}</li>
+  <li><strong>Physical Activity:</strong> {pred.medicalInputs.physicalActivity}</li>
+</ul>
                       <div className="flex gap-4 mt-4 flex-wrap">
                         {pred.status !== "approved" && (
                           <button 
