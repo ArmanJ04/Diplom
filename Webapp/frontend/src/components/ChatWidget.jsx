@@ -42,26 +42,37 @@ function ChatWidget() {
     }
   }, [receiverId]);
 
-  const fetchMessages = async (targetId) => {
-    try {
-      const res = await axios.get(`${API_BASE_URL}/api/chat/${targetId}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
-      const data = Array.isArray(res.data) ? res.data : [];
-      setMessages(data);
-      const unread = data.filter((msg) => msg.receiverId === user._id && !msg.read).length;
-      setUnreadCount(unread);
-      await axios.put(
-        `${API_BASE_URL}/api/chat/${targetId}/read`,
-        {},
-        {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        }
-      );
-    } catch {
-      setMessages([]);
+const fetchMessages = async (targetId) => {
+  // 🛡 Exit early if no user or token
+  const token = localStorage.getItem("token");
+  if (!user || !token || !targetId) return;
+
+  try {
+    const res = await axios.get(`${API_BASE_URL}/api/chat/${targetId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    const data = Array.isArray(res.data) ? res.data : [];
+    setMessages(data);
+
+    const unread = data.filter((msg) => msg.receiverId === user._id && !msg.read).length;
+    setUnreadCount(unread);
+
+    await axios.put(`${API_BASE_URL}/api/chat/${targetId}/read`, {}, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+  } catch (err) {
+    if (err.response?.status === 403 || err.response?.status === 401) {
+      console.warn("Unauthorized or forbidden access to chat.");
+    } else {
+      console.error("Failed to fetch messages:", err);
+      toast.error("Failed to load messages");
     }
-  };
+    setMessages([]);
+  }
+};
+
 
   const allowedExtensions = ["doc", "pdf", "jpg", "jpeg", "png"];
 
