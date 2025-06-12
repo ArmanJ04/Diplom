@@ -18,6 +18,7 @@ function DoctorDashboard() {
   const [stats, setStats] = useState({});
   const [patients, setPatients] = useState([]);
   const [expandedIndex, setExpandedIndex] = useState(null);
+  const [predictionSummaries, setPredictionSummaries] = useState({});
 
   useEffect(() => {
     if (!user || user.role !== "doctor") {
@@ -41,6 +42,26 @@ function DoctorDashboard() {
     }
   };
 
+  const handleExpand = async (uin, index) => {
+    if (expandedIndex === index) {
+      setExpandedIndex(null);
+    } else {
+      setExpandedIndex(index);
+      if (!predictionSummaries[uin]) {
+        try {
+          const token = localStorage.getItem("token");
+          const res = await fetch(`${import.meta.env.VITE_API_URL}/api/doctor/patients/${uin}/prediction-summary`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const data = await res.json();
+          setPredictionSummaries(prev => ({ ...prev, [uin]: data }));
+        } catch (err) {
+          console.error("Failed to fetch prediction summary:", err);
+        }
+      }
+    }
+  };
+
   const chartData = [
     { name: "Patients", value: stats.patientCount || 0 },
     { name: "Pending", value: stats.pendingPredictions || 0 },
@@ -54,7 +75,7 @@ function DoctorDashboard() {
 
       {/* Overview Chart */}
       <section className="mb-10">
-        <h2 className="text-2xl font-semibold mb-4 text-gray-800">📊 Prediction Overview</h2>
+        <h2 className="text-2xl font-semibold mb-4 text-gray-800">📊 General Overview</h2>
         <ResponsiveContainer width="100%" height={280}>
           <BarChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" />
@@ -83,39 +104,41 @@ function DoctorDashboard() {
           <p className="text-gray-600">No patients assigned yet.</p>
         ) : (
           <ul className="space-y-4">
-        {patients.map((p, i) => {
-  const isExpanded = expandedIndex === i;
-  return (
-    <li
-      key={i}
-      className={`p-4 bg-white rounded-lg shadow-sm border transition-all duration-300 
-                  ${isExpanded ? "bg-gray-50" : "hover:bg-gray-100"} cursor-pointer`}
-      onClick={() => setExpandedIndex(isExpanded ? null : i)}
-      title="Click to view patient details"
-    >
-      <div className="flex justify-between items-center">
-        <p className="font-semibold text-blue-700 text-lg flex items-center gap-2">
-          👤 {p.firstName} {p.lastName}
-          <span className="text-base text-gray-400">
-            {isExpanded ? "▲" : "▼"}
-          </span>
-        </p>
-      </div>
+            {patients.map((p, i) => {
+              const isExpanded = expandedIndex === i;
+              const summary = predictionSummaries[p.uin] || {};
+              return (
+                <li
+                  key={i}
+                  className={`p-4 bg-white rounded-lg shadow-sm border transition-all duration-300 
+                            ${isExpanded ? "bg-gray-50" : "hover:bg-gray-100"} cursor-pointer`}
+                  onClick={() => handleExpand(p.uin, i)}
+                  title="Click to view patient details"
+                >
+                  <div className="flex justify-between items-center">
+                    <p className="font-semibold text-blue-700 text-lg flex items-center gap-2">
+                      👤 {p.firstName} {p.lastName}
+                      <span className="text-base text-gray-400">{isExpanded ? "▲" : "▼"}</span>
+                    </p>
+                  </div>
 
-      {isExpanded && (
-        <div className="mt-2 text-gray-700 text-sm pl-1">
-          <p title="Email address of patient">
-            📧 <strong>Email:</strong> {p.email}
-          </p>
-          <p title="Unique Identification Number">
-            🆔 <strong>UIN:</strong> {p.uin}
-          </p>
-        </div>
-      )}
-    </li>
-  );
-})}
-
+                  {isExpanded && (
+                    <div className="mt-2 text-gray-700 text-sm pl-1 space-y-1">
+                      <p>📧 <strong>Email:</strong> {p.email}</p>
+                      <p>🆔 <strong>UIN:</strong> {p.uin}</p>
+                      <div className="mt-2">
+                        <p className="font-semibold text-blue-800">📊 Prediction Summary:</p>
+                        <ul className="ml-4 list-disc">
+                          <li>Pending: {summary.pending || 0}</li>
+                          <li>Approved: {summary.approved || 0}</li>
+                          <li>Canceled: {summary.canceled || 0}</li>
+                        </ul>
+                      </div>
+                    </div>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         )}
       </section>
