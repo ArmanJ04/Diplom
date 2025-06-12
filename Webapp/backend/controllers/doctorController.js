@@ -274,6 +274,33 @@ const request = new ConnectionRequest({
     res.status(500).json({ message: "Server error." });
   }
 };
+exports.getPredictionSummary = async (req, res) => {
+  const { uin } = req.params;
+
+  try {
+    const summary = await Prediction.aggregate([
+      { $match: { uin } },
+      {
+        $group: {
+          _id: "$status",
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    // Format the result into { pending: X, approved: Y, canceled: Z }
+    const counts = { pending: 0, approved: 0, canceled: 0 };
+    summary.forEach(item => {
+      counts[item._id] = item.count;
+    });
+
+    res.json(counts);
+  } catch (error) {
+    console.error("Prediction summary error:", error);
+    res.status(500).json({ message: "Server error." });
+  }
+};
+
 exports.getClientInitiatedRequests = async (req, res) => {
   const doctorId = req.user.userId;
   try {
