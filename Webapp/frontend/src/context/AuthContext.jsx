@@ -99,21 +99,25 @@ const login = async (uin, password) => {
     }
   };
 
-  const signup = async (userData) => {
-    try {
-      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/register`, userData, {
-        withCredentials: true,
-      });
-      const newUser = res.data.user;
-      setUser(newUser);
-      localStorage.setItem("user", JSON.stringify(newUser));
-      toast.success("Registration successful! Please complete your profile.");
-      await login(userData.uin, userData.password);
-      return { status: "success", user: newUser };
-    } catch (error) {
-      const message = error.response?.data?.message || "Signup failed";
-    }
-  };
+const signup = async (userData) => {
+  try {
+    const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/register`, userData, {
+      withCredentials: true,
+    });
+    const newUser = res.data.user;
+    setUser(newUser);
+    localStorage.setItem("user", JSON.stringify(newUser));
+    toast.success("Registration successful! Please complete your profile.");
+    await login(userData.uin, userData.password);
+
+    return { status: "success", user: newUser };
+  } catch (error) {
+    const message = error.response?.data?.message || "Signup failed";
+    toast.error(message);
+    return { status: "error", message };
+  }
+};
+
 
   return (
     <AuthContext.Provider
