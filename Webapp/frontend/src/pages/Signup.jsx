@@ -32,7 +32,7 @@ function Signup() {
       toast.error("Password must be at least 8 characters long.");
       return;
     }
-  const result = await signup(formData);Add commentMore actions
+    const result = await signup(formData);
     if (result.status === "success") {
       toast.success("Signup successful!");
       navigate("/profile");
@@ -165,4 +165,4 @@ function Signup() {
   );
 }
 
-export default Signup;
+export default Signup; 
