@@ -112,7 +112,6 @@ const login = async (uin, password) => {
       return { status: "success", user: newUser };
     } catch (error) {
       const message = error.response?.data?.message || "Signup failed";
-      return { status: "error", message };
     }
   };
 
