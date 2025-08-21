@@ -1,0 +1,358 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap');
+
+:root {
+  --color-bg-light: #f9fafb;
+  --color-bg-alt-light: #ffffff;
+  --color-text-primary-light: #1f2937;
+  --color-text-secondary-light: #4b5563;
+  --color-primary-light: #3b82f6;
+  --color-primary-dark-light: #2563eb;
+
+  --color-bg-dark: #121212;
+  --color-bg-alt-dark: #1f1f1f;
+  --color-text-primary-dark: #e0e0e0;
+  --color-text-secondary-dark: #a3a3a3;
+  --color-primary-dark: #60a5fa;
+  --color-primary-dark-dark: #2563eb;
+
+  --font-family: 'Poppins', sans-serif;
+  --transition-fast: 0.2s ease;
+  --transition-med: 0.4s ease;
+}
+
+/* Light theme */
+[data-theme='light'] {
+  --color-bg: var(--color-bg-light);
+  --color-bg-alt: var(--color-bg-alt-light);
+  --color-text-primary: var(--color-text-primary-light);
+  --color-text-secondary: var(--color-text-secondary-light);
+  --color-primary: var(--color-primary-light);
+  --color-primary-dark: var(--color-primary-dark-light);
+}
+
+/* Dark theme */
+[data-theme='dark'] {
+  --color-bg: var(--color-bg-dark);
+  --color-bg-alt: var(--color-bg-alt-dark);
+  --color-text-primary: var(--color-text-primary-dark);
+  --color-text-secondary: var(--color-text-secondary-dark);
+  --color-primary: var(--color-primary-dark);
+  --color-primary-dark: var(--color-primary-dark-dark);
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-family);
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  transition: background-color var(--transition-med), color var(--transition-med);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.page-container {
+  max-width: 960px;
+  margin: 60px auto;
+  background: var(--color-bg-alt);
+  border-radius: 24px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.12);
+  padding: 48px 60px;
+  min-height: calc(100vh - 140px);
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  animation: fadeIn 0.8s ease forwards;
+  transition: background var(--transition-med), color var(--transition-med);
+}
+
+h1, h2 {
+  font-weight: 800;
+  color: var(--color-primary);
+  margin-bottom: 16px;
+  line-height: 1.15;
+  animation: fadeInUp 0.6s ease forwards;
+}
+
+h1 {
+  font-size: 3rem;
+}
+
+h2 {
+  font-size: 2rem;
+}
+
+p, label {
+  color: var(--color-text-secondary);
+  font-size: 1.1rem;
+  line-height: 1.6;
+  animation: fadeIn 1s ease forwards;
+}
+
+form {
+  width: 100%;
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+input, select, textarea {
+  font-family: var(--font-family);
+  font-size: 1rem;
+  padding: 16px 20px;
+  border-radius: 14px;
+  border: 1.5px solid #d1d5db;
+  background: var(--color-bg-alt);
+  color: var(--color-text-primary);
+  box-sizing: border-box;
+  transition: border-color var(--transition-med), box-shadow var(--transition-med), background var(--transition-med);
+  outline-offset: 2px;
+  outline-color: transparent;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline-color: var(--color-primary);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 14px var(--color-primary);
+  background: var(--color-bg-alt);
+}
+
+button {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  border: none;
+  border-radius: 32px;
+  padding: 16px 32px;
+  color: white;
+  font-weight: 700;
+  font-size: 1.15rem;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.45);
+  transition: background-color 0.4s ease, transform 0.3s ease, box-shadow 0.3s ease;
+  align-self: flex-start;
+}
+
+button:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--color-primary-dark), #1a3aa8);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 36px rgba(37, 99, 235, 0.75);
+}
+
+button:disabled {
+  background-color: #a5b4fc;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+a {
+  color: var(--color-primary);
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+a:hover {
+  text-decoration: underline;
+  color: var(--color-primary-dark);
+}
+
+/* Navbar */
+
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 10000;
+  backdrop-filter: saturate(180%) blur(20px);
+  background: var(--color-bg-alt);
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  padding: 18px 48px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 700;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  font-family: var(--font-family);
+  transition: background-color 0.3s ease;
+}
+
+.navbar-left, .navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.navbar-link {
+  color: var(--color-text-primary);
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 8px 16px;
+  border-radius: 24px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  cursor: pointer;
+  user-select: none;
+}
+
+.navbar-link:hover {
+  background-color: var(--color-primary);
+  color: white;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.5);
+  transform: translateY(-2px);
+}
+
+.dropdown {
+  position: relative;
+}
+
+.dropdown-toggle {
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 24px;
+  color: var(--color-text-primary);
+  transition: background-color 0.3s ease;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.95rem;
+}
+
+.dropdown-toggle:hover {
+  background-color: var(--color-primary);
+  color: white;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.5);
+  transform: translateY(-2px);
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 48px;
+  right: 0;
+  background: var(--color-bg-alt);
+  border-radius: 20px;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.15);
+  width: 260px;
+  padding: 20px;
+  color: var(--color-text-primary);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.dropdown:hover .dropdown-menu {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.dropdown-menu p {
+  margin: 0 0 12px;
+  font-weight: 700;
+  text-align: center;
+  font-size: 1rem;
+}
+
+.dropdown-menu button {
+  width: 100%;
+  padding: 14px 0;
+  background-color: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: 32px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 1.1rem;
+  transition: background-color 0.3s ease;
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5);
+}
+
+.dropdown-menu button:hover {
+  background-color: var(--color-primary-dark);
+  box-shadow: 0 8px 30px rgba(37, 99, 235, 0.7);
+}
+
+/* Form labels and inputs */
+
+label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+  font-size: 1.1rem;
+  color: var(--color-text-primary);
+  user-select: none;
+}
+
+input[type="checkbox"] {
+  width: auto;
+  margin-right: 12px;
+  cursor: pointer;
+}
+
+.tooltip {
+  position: relative;
+  cursor: help;
+}
+
+.tooltip:hover::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: 140%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--color-primary-dark);
+  color: white;
+  padding: 8px 14px;
+  border-radius: 12px;
+  white-space: nowrap;
+  font-size: 0.95rem;
+  opacity: 0.95;
+  pointer-events: none;
+  z-index: 4000;
+  transition: opacity 0.3s ease;
+}
+
+/* Animations */
+
+@keyframes fadeIn {
+  from {opacity: 0; transform: translateY(10px);}
+  to {opacity: 1; transform: translateY(0);}
+}
+
+@keyframes fadeInUp {
+  from {opacity: 0; transform: translateY(20px);}
+  to {opacity: 1; transform: translateY(0);}
+}
+
+.page-container, h1, h2, p, label, button, input, select, textarea {
+  animation-fill-mode: forwards;
+  animation-timing-function: ease;
+  animation-duration: 0.7s;
+}
+
+/* Responsive */
+
+@media (max-width: 768px) {
+  .page-container {
+    padding: 30px 20px;
+    margin: 40px 12px;
+  }
+  .navbar {
+    padding: 14px 24px;
+  }
+  .navbar-link, .dropdown-toggle {
+    padding: 8px 14px;
+    font-size: 0.85rem;
+  }
+}
+.collapse-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease, opacity 0.3s ease;
+  opacity: 0;
+}
+
+.collapse-content.open {
+  max-height: 1000px; /* достаточно большая высота */
+  opacity: 1;
+}
