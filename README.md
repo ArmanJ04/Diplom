@@ -20,12 +20,11 @@ The project integrates a PyTorch model (`best_model.pth`) through a Python micro
 
 ### Backend
 - **Node.js** + **Express.js**
-- **MongoDB** (NoSQL)
+- **MongoDB**
 - **JWT Authentication**
 - **Multer** (for file uploads)
 
 ### AI Service
-- **Python** with **Flask** or **FastAPI**
 - **PyTorch** model (`best_model.pth`)
 - REST API for prediction
 
@@ -57,7 +56,6 @@ The project integrates a PyTorch model (`best_model.pth`) through a Python micro
 ## 🧠 AI Model
 
 - Format: `best_model.pth` (PyTorch)
-- Exposed via REST API using **Flask** or **FastAPI**
 - Accepts structured health data and returns a risk classification
 - Prediction is stored in MongoDB with a timestamp
 
